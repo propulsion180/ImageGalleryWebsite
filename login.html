@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="image-container">
+        <div class="image-item">
+            <button onclick="window.location.href='/signup';">Sign Up</button>
+            <button onclick="window.location.href='/logout';">Logout</button>
+            <form action="/login" method="POST">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required><br><br>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required><br><br>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+    
+</body>
+</html>

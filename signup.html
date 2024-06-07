@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="image-container">
+        <div class="image-item">
+            <button onclick="window.location.href='/login';">Login</button>
+            <button onclick="window.location.href='/logout';">Logout</button>
+            <form action="/signup" method="POST">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required><br><br>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required><br><br>
+                <label for="admin">Admin:</label>
+                <input type="checkbox" id="admin" name="admin"><br><br>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
