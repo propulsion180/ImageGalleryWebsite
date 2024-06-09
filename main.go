@@ -68,6 +68,24 @@ func initDB(dbName string) (*sql.DB, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not create users: %v", err)
 		}
+
+		// Add Migada with password Perera and admin as true
+		addUserSQL := `INSERT INTO users (username, password, admin) VALUES (?, ?, ?)`
+		_, err = db.Exec(addUserSQL, "Migada", "Perera", true)
+		if err != nil {
+			return nil, fmt.Errorf("failed to add user: %v", err)
+
+		}
+
+		createTableSQL = `CREATE TABLE IF NOT EXISTS sessions (
+			session_token TEXT PRIMARY KEY,
+			username TEXT NOT NULL
+		);`
+
+		_, err = db.Exec(createTableSQL)
+		if err != nil {
+			return nil, fmt.Errorf("could not create sessions: %v", err)
+		}
 	}
 
 	return db, nil
@@ -192,12 +210,24 @@ func main() {
 	fmt.Println("Starting Server")
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t := template.Must(template.ParseFiles("index.html"))
+		t.Execute(w, nil)
+	})
+
+	http.HandleFunc("/allimages", func(w http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie("session_token")
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+		val := c.Value
+		u := strings.Split(val, "@")[0]
+		fmt.Println(u)
+
+		t := template.Must(template.ParseFiles("allimages.html"))
 		data, err := getAllImageMeta(db)
 		if err != nil {
 			fmt.Println("Failed to get all data")
 		}
-		fmt.Println(data)
-		fmt.Println(r.Cookie("session_token"))
 		t.Execute(w, data)
 	})
 
@@ -331,14 +361,25 @@ func main() {
 				fmt.Println("after to cookies")
 				http.SetCookie(w, &c)
 				fmt.Println("after set cookie")
-				http.Redirect(w, r, "/", http.StatusFound)
+				fmt.Println("gets to here rs")
+
+				tmpl := template.Must(template.ParseFiles("login.html"))
+				w.Header().Set("HX-Redirect", "/")
+				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Successful Login"})
+				fmt.Println("getstarstars")
+				return
+			} else {
+				fmt.Println("unsuccessful login")
+				tmpl := template.Must(template.ParseFiles("login.html"))
+				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsuccessful Login"})
 				return
 			}
 
 		} else {
 			fmt.Println(" inhere")
+
 			t := template.Must(template.ParseFiles("login.html"))
-			t.Execute(w, nil)
+			t.Execute(w, map[string]string{"data": "Login"})
 		}
 
 	})
@@ -356,13 +397,29 @@ func main() {
 			fmt.Println(ts)
 			if !ts {
 				fmt.Println("User not already exists")
-				addUser(db, User{Username: uname, Password: pword, admin: admin == "on"})
-				http.Redirect(w, r, "/login", http.StatusFound)
+				err := addUser(db, User{Username: uname, Password: pword, admin: admin == "on"})
+				if err != nil {
+					fmt.Println("Unsuccessful Sign Up")
+					fmt.Println(err)
+					ss := err.Error() == "UNIQUE constraint failed: users.username"
+					tmpl := template.Must(template.ParseFiles("login.html"))
+					if ss {
+						tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Username Already Exists"})
+					} else {
+						tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Something wrong with the database"})
+					}
+					return
+				}
+
+				tmpl := template.Must(template.ParseFiles("signup.html"))
+				w.Header().Set("HX-Redirect", "/")
+				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Successful Sign Up"})
+				http.Redirect(w, r, "/", http.StatusFound)
 			}
 
 		} else {
 			t := template.Must(template.ParseFiles("signup.html"))
-			t.Execute(w, nil)
+			t.Execute(w, map[string]string{"data": "Sign Up"})
 		}
 	})
 

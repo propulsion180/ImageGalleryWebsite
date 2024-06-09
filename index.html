@@ -9,23 +9,16 @@
 
 </head>
 <body>
-    <h1>Pictures taken by Migada Perera</h1>
-    <button onclick="window.location.href='/admin/';">Go to Admin Page</button>
-    <button onclick="window.location.href='/login';">Login</button>
-    <button onclick="window.location.href='/signup';">Sign Up</button>
-    <button onclick="window.location.href='/logout';">Logout</button>
-
     <div class=image-container>
-        {{ range .data }}
         <div class=image-item>
-            <a href="/detail?path={{ .FilePath }}">
-                <img src="/{{ .FilePath }}" alt="{{ .Description }}">
-            </a>
+            <h1>Pictures taken by Migada Perera</h1>
+            <button onclick="window.location.href='/admin/';">Go to Admin Page</button>
+            <button onclick="window.location.href='/allimages';">View all Images</button>
+            <button onclick="window.location.href='/login';">Login</button>
+            <button onclick="window.location.href='/signup';">Sign Up</button>
+            <button onclick="window.location.href='/logout';">Logout</button>
         </div>
-        {{ end }}
     </div>
-
-
 </body>
 </html>
 

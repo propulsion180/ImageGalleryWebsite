@@ -9,7 +9,7 @@
 
 </head>
 <body>
-    <h1>Pictures taken by Migada Perera</h1>
+    <h1 id="title">Pictures taken by Migada Perera</h1>
     <form hx-post="/admin/addimage/" hx-target="#image-list" hx-swap="beforeend" enctype="multipart/form-data">
         <div>
             <label for="Description">Description</label>
@@ -44,7 +44,5 @@
         {{ end }}
         {{ end }}
     </ul>
-
 </body>
 </html>
-
