@@ -150,24 +150,63 @@ func getImageMeta(db *sql.DB, filePath string) (ImageMeta, error) {
 	return img, err
 }
 
-func deleteCookie(slice []*http.Cookie, name string) []*http.Cookie {
-	for i, cookie := range slice {
-		if cookie.Value == name {
-			slice = append(slice[:i], slice[i+1:]...)
-			break
-		}
-	}
+// func deleteCookie(slice []*http.Cookie, name string) []*http.Cookie {
+// 	for i, cookie := range slice {
+// 		if cookie.Value == name {
+// 			slice = append(slice[:i], slice[i+1:]...)
+// 			break
+// 		}
+// 	}
 
-	return slice
+// 	return slice
+// }
+
+// func containsCookie(slice []*http.Cookie, name string) bool {
+// 	for _, cookie := range slice {
+// 		if cookie.Value == name {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
+
+func addCookie(db *sql.DB, sessionToken string, username string) error {
+	insertSQL := `INSERT INTO sessions (session_token, username) VALUES (?, ?)`
+	_, err := db.Exec(insertSQL, sessionToken, username)
+	return err
 }
 
-func containsCookie(slice []*http.Cookie, name string) bool {
-	for _, cookie := range slice {
-		if cookie.Value == name {
-			return true
-		}
+func getCookieName(db *sql.DB, sessionToken string) (string, error) {
+	querySQL := `SELECT username FROM sessions WHERE session_token = ?`
+	row := db.QueryRow(querySQL, sessionToken)
+	var username string
+	err := row.Scan(&username)
+	return username, err
+}
+
+func removeCookie(db *sql.DB, sessionToken string) error {
+	deleteSQL := `DELETE FROM sessions WHERE session_token = ?`
+	_, err := db.Exec(deleteSQL, sessionToken)
+	return err
+}
+
+func removeCookieByName(db *sql.DB, username string) error {
+	deleteSQL := `DELETE FROM sessions WHERE username = ?`
+	_, err := db.Exec(deleteSQL, username)
+	return err
+}
+
+func containsCookie(db *sql.DB, sessionToken string) bool {
+	fmt.Println("inside the contains cookie function", sessionToken)
+	querySQL := `SELECT session_token FROM sessions WHERE session_token = ?`
+	row := db.QueryRow(querySQL, sessionToken)
+	var token string
+	err := row.Scan(&token)
+	if err != nil {
+		return false
+		fmt.Println("false")
 	}
-	return false
+	return true
 }
 
 func checkUser(db *sql.DB, username string, password string) bool {
@@ -194,8 +233,6 @@ func checkUserAdmin(db *sql.DB, username string) (bool, error) {
 }
 
 func main() {
-	var cookies []*http.Cookie
-
 	db, err := initDB("images.db")
 	if err != nil {
 		fmt.Println("failed to open database.")
@@ -215,7 +252,7 @@ func main() {
 
 	http.HandleFunc("/allimages", func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("session_token")
-		if err != nil {
+		if err != nil || !containsCookie(db, c.Value) {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
@@ -234,7 +271,7 @@ func main() {
 	http.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("here")
 		c, err := r.Cookie("session_token")
-		if err != nil {
+		if err != nil || !containsCookie(db, c.Value) {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
@@ -348,6 +385,10 @@ func main() {
 			r.ParseForm()
 			uname := r.Form.Get("username")
 			pword := r.Form.Get("password")
+			err := removeCookieByName(db, uname)
+			if err != nil {
+				fmt.Println("Either no cookies to remove or failed to remove.")
+			}
 			fmt.Println("Outside of checkUser")
 			if checkUser(db, uname, pword) {
 				c := http.Cookie{
@@ -357,11 +398,14 @@ func main() {
 					MaxAge:   3600,
 				}
 				fmt.Println("before cookie added")
-				cookies = append(cookies, &c)
-				fmt.Println("after to cookies")
+				err := addCookie(db, c.Value, uname)
+				if err != nil {
+					fmt.Println("failed to add cookie")
+				}
 				http.SetCookie(w, &c)
-				fmt.Println("after set cookie")
-				fmt.Println("gets to here rs")
+				fmt.Println(&c)
+				fmt.Println(c.String())
+				fmt.Println(c.Value)
 
 				tmpl := template.Must(template.ParseFiles("login.html"))
 				w.Header().Set("HX-Redirect", "/")
@@ -428,13 +472,17 @@ func main() {
 		if err != nil {
 			fmt.Println("Failed to get cookie")
 			http.Redirect(w, r, "/", http.StatusFound)
+			return
 		}
 
 		c.MaxAge = -1
 		c.Expires = time.Unix(0, 0)
 
 		http.SetCookie(w, c)
-		deleteCookie(cookies, c.Value)
+		err = removeCookie(db, c.Value)
+		if err != nil {
+			fmt.Println("Failed to remove cookie")
+		}
 		http.Redirect(w, r, "/", http.StatusFound)
 	})
 
