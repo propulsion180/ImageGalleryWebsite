@@ -250,6 +250,11 @@ func main() {
 		t.Execute(w, nil)
 	})
 
+	http.HandleFunc("/main", func(w http.ResponseWriter, r *http.Request) {
+		tpl := template.Must(template.ParseFiles("main.html"))
+		tpl.Execute(w, nil)
+	})
+
 	http.HandleFunc("/allimages", func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("session_token")
 		if err != nil || !containsCookie(db, c.Value) {
@@ -275,10 +280,13 @@ func main() {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
-		val := c.Value
-		u := strings.Split(val, "@")[0]
+		uname, err := getCookieName(db, c.Value)
+		if err != nil {
+			fmt.Println("Failed to get cookie's user" + err.Error())
+		}
+		fmt.Println(uname)
 
-		admin, err := checkUserAdmin(db, u)
+		admin, err := checkUserAdmin(db, uname)
 		if err != nil {
 			fmt.Println("Failed to check if user is admin")
 		}
@@ -395,7 +403,7 @@ func main() {
 					Name:     "session_token",
 					Value:    uname + "@20",
 					HttpOnly: true,
-					MaxAge:   3600,
+					MaxAge:   600,
 				}
 				fmt.Println("before cookie added")
 				err := addCookie(db, c.Value, uname)

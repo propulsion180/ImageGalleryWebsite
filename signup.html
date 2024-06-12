@@ -13,7 +13,7 @@
                 <h1 id="titleh">{{.data}}</h1>
                 {{ end }}
             </div>
-            <button onclick="window.location.href='/';">Main Page</button>
+            <button hx-get="/main" hx-target="#theBody" hx-swap="innerHTML">Main Page</button>
             <button onclick="window.location.href='/login';">Login</button>
             <button onclick="window.location.href='/logout';">Logout</button>
             <form hx-post="/signup" hx-target="#titleh" hx-swap="innerHTML" >
