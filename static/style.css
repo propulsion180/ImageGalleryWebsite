@@ -1,18 +1,18 @@
 @font-face {
     font-family: 'Berkeley';  /* Assign a name to your font */
-    src: url('/home/mp/imgGalleryPOC/static/BerkeleyMonoVariable-Regular.woff2') format('woff2');  /* Path to your WOFF2 font file */
+    src: url('/home/mp/imgGalleryPOC/static/Berkeley MonoMonoVariable-Regular.woff2') format('woff2');  /* Path to your WOFF2 font file */
 }
 
 
 h1 {
     color: #ebdbb2;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 18;
 }
 
 h2 {
     color: #ebdbb2;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 14;
 }
 
@@ -20,13 +20,13 @@ body {
     background: #282828;
     margin: 10;
     padding: 10;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 12;
 }
 
 .li {
     color: #ebdbb2;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 12;
 }
 
@@ -37,7 +37,7 @@ form {
     background: #282828;
     color: #ebdbb2;
     border-radius: 10px;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 10;
 }
 
@@ -48,7 +48,7 @@ button {
     margin-top: 20px;
     border-radius: 10px;
     border: none;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 10;
 }
 
@@ -68,7 +68,7 @@ input[type="password"]{
     cursor: ponter;
     padding: 10px;
     border-radius: 10px;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 12;
 }
 input[type="text"],
@@ -91,7 +91,7 @@ input[type="submit"] {
     padding: 10px;
     border-radius: 10px;
     cursor: pointer;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 12;
 }
 
@@ -157,7 +157,7 @@ input[type="file"]:hover {
 
 .image-item p {
     color: #ebdbb2;
-    font-family: 'Berkeley', mono;
+    font-family: 'Berkeley Mono', mono;
     font-size: 14px;
 }
 

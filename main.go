@@ -256,6 +256,9 @@ func main() {
 	})
 
 	http.HandleFunc("/allimages", func(w http.ResponseWriter, r *http.Request) {
+		if (r.Header.Get("HX-Request")) != "true" {
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		}
 		c, err := r.Cookie("session_token")
 		if err != nil || !containsCookie(db, c.Value) {
 			http.Redirect(w, r, "/login", http.StatusFound)
@@ -274,6 +277,9 @@ func main() {
 	})
 
 	http.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
+		if (r.Header.Get("HX-Request")) != "true" {
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		}
 		fmt.Println("here")
 		c, err := r.Cookie("session_token")
 		if err != nil || !containsCookie(db, c.Value) {
@@ -307,6 +313,9 @@ func main() {
 	})
 
 	http.HandleFunc("/admin/addimage/", func(w http.ResponseWriter, r *http.Request) {
+		if (r.Header.Get("HX-Request")) != "true" {
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		}
 		err := r.ParseMultipartForm(10 << 20) // 10 MB
 		if err != nil {
 			fmt.Fprintf(w, "Unable to parse form: %v", err)
@@ -377,6 +386,9 @@ func main() {
 	})
 
 	http.HandleFunc("/detail", func(w http.ResponseWriter, r *http.Request) {
+		if (r.Header.Get("HX-Request")) != "true" {
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		}
 		path := r.URL.Query().Get("path")
 		path, err = url.QueryUnescape(path)
 		fmt.Println(path)
@@ -390,6 +402,7 @@ func main() {
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
+			fmt.Println("HX-Request: " + r.Header.Get("HX-Request"))
 			r.ParseForm()
 			uname := r.Form.Get("username")
 			pword := r.Form.Get("password")
@@ -429,8 +442,12 @@ func main() {
 
 		} else {
 			fmt.Println(" inhere")
-
+			fmt.Println("HX-Request: " + r.Header.Get("HX-Request"))
+			if (r.Header.Get("HX-Request")) != "true" {
+				http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			}
 			t := template.Must(template.ParseFiles("login.html"))
+
 			t.Execute(w, map[string]string{"data": "Login"})
 		}
 
@@ -470,6 +487,9 @@ func main() {
 			}
 
 		} else {
+			if (r.Header.Get("HX-Request")) != "true" {
+				http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			}
 			t := template.Must(template.ParseFiles("signup.html"))
 			t.Execute(w, map[string]string{"data": "Sign Up"})
 		}

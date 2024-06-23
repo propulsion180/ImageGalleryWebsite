@@ -6,7 +6,7 @@
             {{ end }}
         </div>
         <button hx-get="/main" hx-target="#theBody" hx-swap="innerHTML">Main Page</button>
-        <button onclick="window.location.href='/signup';">Sign Up</button>
+        <button hx-get="/signup" hx-target="#theBody" hx-swap="innerHTML">Signup Page</button>
         <button onclick="window.location.href='/logout';">Logout</button>
 
         <form hx-post="/login" hx-target="#title" hx-swap="innerHTML" >
