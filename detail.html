@@ -19,8 +19,7 @@
             <h2 class="center-text"style="color: #ebdbb2;">Shutter Speed: {{ .ShutterSpeed }}</h2>
             <h2 class="center-text"style="color: #ebdbb2;">Aperture: {{ .Aperture }}</h2>
             <h2 class="center-text"style="color: #ebdbb2;">Location: {{ .Location }}</h2>
-            <button onclick="window.location.href='/admin/';">Go to Admin Page</button>
-            <button onclick="window.location.href='/';">Go to Main Page</button>
+            <button hx-get="/main" hx-target="#theBody" hx-swap="innerHTML">Main Page</button><br>
         </div>
     </div>
     

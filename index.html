@@ -8,15 +8,15 @@
     <script src="https://unpkg.com/htmx.org@1.9.2" integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h" crossorigin="anonymous"></script>
 
 </head>
-<body>
+<body id="theBody">
     <div class=image-container>
         <div class=image-item>
             <h1>Pictures taken by Migada Perera</h1>
-            <button onclick="window.location.href='/admin/';">Go to Admin Page</button>
-            <button onclick="window.location.href='/allimages';">View all Images</button>
-            <button onclick="window.location.href='/login';">Login</button>
-            <button onclick="window.location.href='/signup';">Sign Up</button>
             <button onclick="window.location.href='/logout';">Logout</button>
+            <button hx-get="/admin" hx-target="#theBody" hx-swap="innerHTML">Admin Page</button>
+            <button hx-get="/login" hx-target="#theBody" hx-swap="innerHTML">Login Page</button>
+            <button hx-get="/signup" hx-target="#theBody" hx-swap="innerHTML">Signup Page</button>
+            <button hx-get="/allimages" hx-target="#theBody" hx-swap="innerHTML">allimages Page</button>
         </div>
     </div>
 </body>
