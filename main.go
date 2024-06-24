@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"html/template"
 	"io"
@@ -15,6 +17,13 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+func convertToSHA256(in string) string {
+	hash := sha256.New()
+	hash.Write([]byte(in))
+	checksum := hash.Sum(nil)
+	return hex.EncodeToString(checksum)
+}
 
 type ImageMeta struct {
 	FilePath     string
@@ -411,22 +420,21 @@ func main() {
 				fmt.Println("Either no cookies to remove or failed to remove.")
 			}
 			fmt.Println("Outside of checkUser")
+			cval := convertToSHA256(uname + "@20")
 			if checkUser(db, uname, pword) {
 				c := http.Cookie{
 					Name:     "session_token",
-					Value:    uname + "@20",
+					Value:    cval,
 					HttpOnly: true,
 					MaxAge:   600,
 				}
 				fmt.Println("before cookie added")
-				err := addCookie(db, c.Value, uname)
+				err := addCookie(db, cval, uname)
 				if err != nil {
 					fmt.Println("failed to add cookie")
 				}
 				http.SetCookie(w, &c)
-				fmt.Println(&c)
-				fmt.Println(c.String())
-				fmt.Println(c.Value)
+				fmt.Println(cval)
 
 				tmpl := template.Must(template.ParseFiles("login.html"))
 				w.Header().Set("HX-Redirect", "/")
