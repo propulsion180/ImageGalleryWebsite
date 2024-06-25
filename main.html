@@ -5,6 +5,12 @@
         <button hx-get="/admin" hx-target="#theBody" hx-swap="innerHTML">Admin Page</button>
         <button hx-get="/login" hx-target="#theBody" hx-swap="innerHTML">Login Page</button>
         <button hx-get="/signup" hx-target="#theBody" hx-swap="innerHTML">Signup Page</button>
-        <button hx-get="/allimages" hx-target="#theBody" hx-swap="innerHTML">allimages Page</button>
     </div>
+    {{ range .data }}
+    <div class=image-item>
+        <a hx-get="/detail?path={{ .FilePath }}" hx-target="#theBody" hx-swap="innerHTML">
+            <img src="/{{ .FilePath }}" alt="{{ .Description }}">
+        </a>
+    </div>
+    {{ end }}
 </div>
