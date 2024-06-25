@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -159,26 +158,6 @@ func getImageMeta(db *sql.DB, filePath string) (ImageMeta, error) {
 	return img, err
 }
 
-// func deleteCookie(slice []*http.Cookie, name string) []*http.Cookie {
-// 	for i, cookie := range slice {
-// 		if cookie.Value == name {
-// 			slice = append(slice[:i], slice[i+1:]...)
-// 			break
-// 		}
-// 	}
-
-// 	return slice
-// }
-
-// func containsCookie(slice []*http.Cookie, name string) bool {
-// 	for _, cookie := range slice {
-// 		if cookie.Value == name {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
-
 func addCookie(db *sql.DB, sessionToken string, username string) error {
 	insertSQL := `INSERT INTO sessions (session_token, username) VALUES (?, ?)`
 	_, err := db.Exec(insertSQL, sessionToken, username)
@@ -256,31 +235,40 @@ func main() {
 	fmt.Println("Starting Server")
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t := template.Must(template.ParseFiles("index.html"))
-		t.Execute(w, nil)
+		data, err := getAllImageMeta(db)
+		if err != nil {
+			fmt.Println("Failed to get all data")
+		}
+		t.Execute(w, data)
 	})
 
 	http.HandleFunc("/main", func(w http.ResponseWriter, r *http.Request) {
 		tpl := template.Must(template.ParseFiles("main.html"))
-		tpl.Execute(w, nil)
-	})
-
-	http.HandleFunc("/allimages", func(w http.ResponseWriter, r *http.Request) {
-		if (r.Header.Get("HX-Request")) != "true" {
-			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
-		}
-		c, err := r.Cookie("session_token")
-		if err != nil || !containsCookie(db, c.Value) {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-		val := c.Value
-		u := strings.Split(val, "@")[0]
-		fmt.Println(u)
-
-		t := template.Must(template.ParseFiles("allimages.html"))
 		data, err := getAllImageMeta(db)
 		if err != nil {
 			fmt.Println("Failed to get all data")
+		}
+		tpl.Execute(w, data)
+	})
+
+	http.HandleFunc("/detail", func(w http.ResponseWriter, r *http.Request) {
+		if (r.Header.Get("HX-Request")) != "true" {
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		}
+
+		c, err := r.Cookie("session_token")
+		if err != nil || !containsCookie(db, c.Value) {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+
+		path := r.URL.Query().Get("path")
+		path, err = url.QueryUnescape(path)
+		fmt.Println(path)
+		t := template.Must(template.ParseFiles("detail.html"))
+		data, err := getImageMeta(db, path)
+		if err != nil {
+			fmt.Println("Failed to get all data admin")
 		}
 		t.Execute(w, data)
 	})
@@ -394,21 +382,6 @@ func main() {
 		tmpl.ExecuteTemplate(w, "simple-list", ImageMeta{FilePath: filePath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 	})
 
-	http.HandleFunc("/detail", func(w http.ResponseWriter, r *http.Request) {
-		if (r.Header.Get("HX-Request")) != "true" {
-			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
-		}
-		path := r.URL.Query().Get("path")
-		path, err = url.QueryUnescape(path)
-		fmt.Println(path)
-		t := template.Must(template.ParseFiles("detail.html"))
-		data, err := getImageMeta(db, path)
-		if err != nil {
-			fmt.Println("Failed to get all data admin")
-		}
-		t.Execute(w, data)
-	})
-
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			fmt.Println("HX-Request: " + r.Header.Get("HX-Request"))
@@ -467,14 +440,12 @@ func main() {
 			r.ParseForm()
 			uname := r.Form.Get("username")
 			pword := r.Form.Get("password")
-			admin := r.Form.Get("admin")
 
-			fmt.Println(uname, pword, admin)
 			ts := checkUser(db, uname, pword)
 			fmt.Println(ts)
 			if !ts {
 				fmt.Println("User not already exists")
-				err := addUser(db, User{Username: uname, Password: pword, admin: admin == "on"})
+				err := addUser(db, User{Username: uname, Password: pword, admin: false})
 				if err != nil {
 					fmt.Println("Unsuccessful Sign Up")
 					fmt.Println(err)
