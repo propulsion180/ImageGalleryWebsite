@@ -235,11 +235,7 @@ func main() {
 	fmt.Println("Starting Server")
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t := template.Must(template.ParseFiles("index.html"))
-		data, err := getAllImageMeta(db)
-		if err != nil {
-			fmt.Println("Failed to get all data")
-		}
-		t.Execute(w, data)
+		t.Execute(w, map[string]string{"data": "/main"})
 	})
 
 	http.HandleFunc("/main", func(w http.ResponseWriter, r *http.Request) {

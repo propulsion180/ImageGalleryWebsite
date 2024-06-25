@@ -9,22 +9,7 @@
 
 </head>
 <body id="theBody">
-    <div class=image-container>
-        <div class=image-item>
-            <h1>Pictures taken by Migada Perera</h1>
-            <button onclick="window.location.href='/logout';">Logout</button>
-            <button hx-get="/admin" hx-target="#theBody" hx-swap="innerHTML">Admin Page</button>
-            <button hx-get="/login" hx-target="#theBody" hx-swap="innerHTML">Login Page</button>
-            <button hx-get="/signup" hx-target="#theBody" hx-swap="innerHTML">Signup Page</button>
-       </div>
-        {{ range .data }}
-        <div class=image-item>
-            <a hx-get="/detail?path={{ .FilePath }}" hx-target="#theBody" hx-swap="innerHTML">
-                <img src="/{{ .FilePath }}" alt="{{ .Description }}">
-            </a>
-        </div>
-        {{ end }}
-    </div>
+    <div hx-trigger="load" hx-get="{{.data}}" hx-swap="innerHTML" hx-target="#theBody"></div>
 </body>
 </html>
 
