@@ -220,6 +220,17 @@ func checkUserAdmin(db *sql.DB, username string) (bool, error) {
 	return admin, nil
 }
 
+func createUrl(goinTo string, path string) string {
+	temp := url.URL{
+		Path: goinTo,
+	}
+	temp.RawQuery = url.Values{
+		"data": []string{path},
+	}.Encode()
+
+	return temp.String()
+}
+
 func main() {
 	db, err := initDB("images.db")
 	if err != nil {
@@ -234,11 +245,21 @@ func main() {
 
 	fmt.Println("Starting Server")
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		data := r.URL.Query().Get("data")
+		redir := "/main"
+		if data != "" {
+			redir = data
+		}
+		fmt.Println("THe redir" + redir)
 		t := template.Must(template.ParseFiles("index.html"))
-		t.Execute(w, map[string]string{"data": "/main"})
+		t.Execute(w, map[string]string{"data": redir})
 	})
 
 	http.HandleFunc("/main", func(w http.ResponseWriter, r *http.Request) {
+		if (r.Header.Get("HX-Request")) != "true" {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
 		tpl := template.Must(template.ParseFiles("main.html"))
 		data, err := getAllImageMeta(db)
 		if err != nil {
@@ -248,13 +269,15 @@ func main() {
 	})
 
 	http.HandleFunc("/detail", func(w http.ResponseWriter, r *http.Request) {
+		u := r.URL.String()
 		if (r.Header.Get("HX-Request")) != "true" {
-			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			http.Redirect(w, r, createUrl("/", u), http.StatusFound)
+			return
 		}
 
 		c, err := r.Cookie("session_token")
 		if err != nil || !containsCookie(db, c.Value) {
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Redirect(w, r, createUrl("/", createUrl("/login", u)), http.StatusFound)
 			return
 		}
 
@@ -271,12 +294,13 @@ func main() {
 
 	http.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
 		if (r.Header.Get("HX-Request")) != "true" {
-			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			http.Redirect(w, r, createUrl("/", "/admin/"), http.StatusFound)
+			return
 		}
 		fmt.Println("here")
 		c, err := r.Cookie("session_token")
 		if err != nil || !containsCookie(db, c.Value) {
-			http.Redirect(w, r, "/login", http.StatusFound)
+			http.Redirect(w, r, createUrl("/login", "/admin/"), http.StatusFound)
 			return
 		}
 		uname, err := getCookieName(db, c.Value)
@@ -307,7 +331,8 @@ func main() {
 
 	http.HandleFunc("/admin/addimage/", func(w http.ResponseWriter, r *http.Request) {
 		if (r.Header.Get("HX-Request")) != "true" {
-			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
 		}
 		err := r.ParseMultipartForm(10 << 20) // 10 MB
 		if err != nil {
@@ -379,58 +404,81 @@ func main() {
 	})
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.URL.String())
 		if r.Method == http.MethodPost {
-			fmt.Println("HX-Request: " + r.Header.Get("HX-Request"))
+			fmt.Println("is a post ")
 			r.ParseForm()
 			uname := r.Form.Get("username")
 			pword := r.Form.Get("password")
-			err := removeCookieByName(db, uname)
-			if err != nil {
-				fmt.Println("Either no cookies to remove or failed to remove.")
-			}
-			fmt.Println("Outside of checkUser")
-			cval := convertToSHA256(uname + "@20")
-			if checkUser(db, uname, pword) {
-				c := http.Cookie{
-					Name:     "session_token",
-					Value:    cval,
-					HttpOnly: true,
-					MaxAge:   600,
-				}
-				fmt.Println("before cookie added")
-				err := addCookie(db, cval, uname)
-				if err != nil {
-					fmt.Println("failed to add cookie")
-				}
-				http.SetCookie(w, &c)
-				fmt.Println(cval)
 
-				tmpl := template.Must(template.ParseFiles("login.html"))
-				w.Header().Set("HX-Redirect", "/")
-				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Successful Login"})
-				fmt.Println("getstarstars")
-				return
-			} else {
-				fmt.Println("unsuccessful login")
-				tmpl := template.Must(template.ParseFiles("login.html"))
-				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsuccessful Login"})
+			userexists := checkUser(db, uname, pword)
+
+			if !userexists {
+				fmt.Println("user doesn't exist")
+				t := template.Must(template.ParseFiles("login.html"))
+				t.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsucsessful Login"})
 				return
 			}
+
+			err := removeCookieByName(db, uname)
+
+			if err != nil {
+				fmt.Println("Failed to remove old cookies")
+			}
+
+			cval := convertToSHA256(uname + "@20")
+
+			c := http.Cookie{
+				Name:     "session_token",
+				Value:    cval,
+				HttpOnly: true,
+				MaxAge:   600,
+			}
+
+			err = addCookie(db, cval, uname)
+
+			if err != nil {
+				fmt.Println("Failed to add cookie to the database")
+			}
+
+			http.SetCookie(w, &c)
+			fmt.Println("gets to the successfull login")
+			path := r.URL.Query().Get("data")
+			path, err = url.QueryUnescape(path)
+			if err != nil {
+				fmt.Println("Failed to get path from url")
+			}
+			fmt.Println(path)
+			// t := template.Must(template.ParseFiles("login.html"))
+			// w.Header().Add("HX-Redirect", path)
+			// t.ExecuteTemplate(w, "titleb", map[string]string{"data": "Successful Login"})
+			http.Redirect(w, r, createUrl("/", path), http.StatusFound)
 
 		} else {
-			fmt.Println(" inhere")
-			fmt.Println("HX-Request: " + r.Header.Get("HX-Request"))
-			if (r.Header.Get("HX-Request")) != "true" {
-				http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			fmt.Println("is a get")
+			if r.Header.Get("HX-Request") != "true" {
+				fmt.Println("Is an hx")
+				http.Redirect(w, r, createUrl("/", "/login"), http.StatusFound)
+			} else {
+				fmt.Println("Not an hx")
+				path := r.URL.Query().Get("data")
+				path, err = url.QueryUnescape(path)
+				if err != nil {
+					fmt.Println("Failed to get path from url")
+				}
+				fmt.Println(path)
+				t := template.Must(template.ParseFiles("login.html"))
+				t.Execute(w, map[string]string{"data": "Login", "redir": path})
 			}
-			t := template.Must(template.ParseFiles("login.html"))
-
-			t.Execute(w, map[string]string{"data": "Login"})
 		}
 
 	})
 
 	http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		if (r.Header.Get("HX-Request")) != "true" {
+			http.Redirect(w, r, createUrl("/", "/signup"), http.StatusFound)
+			return
+		}
 		if r.Method == http.MethodPost {
 			fmt.Println("Inside of signup")
 			r.ParseForm()
@@ -456,14 +504,15 @@ func main() {
 				}
 
 				tmpl := template.Must(template.ParseFiles("signup.html"))
-				w.Header().Set("HX-Redirect", "/")
+				w.Header().Set("HX-Redirect", "/login")
 				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Successful Sign Up"})
-				http.Redirect(w, r, "/", http.StatusFound)
+				return
 			}
 
 		} else {
 			if (r.Header.Get("HX-Request")) != "true" {
-				http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+				http.Redirect(w, r, createUrl("/", "/signup"), http.StatusFound)
+				return
 			}
 			t := template.Must(template.ParseFiles("signup.html"))
 			t.Execute(w, map[string]string{"data": "Sign Up"})
@@ -487,6 +536,7 @@ func main() {
 			fmt.Println("Failed to remove cookie")
 		}
 		http.Redirect(w, r, "/", http.StatusFound)
+		return
 	})
 
 	log.Fatal(http.ListenAndServe(":9000", nil))

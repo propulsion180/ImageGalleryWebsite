@@ -8,9 +8,10 @@
 </head>
 <body>
     
-    <h1>Pictures taken by Migada Perera</h1>
+    
     <div class=image-container>
         <div class=image-item>
+            <h1>Pictures taken by Migada Perera</h1>
             <a href="/detail?path={{ .FilePath }}">
                 <img src="/{{ .FilePath }}" alt="{{ .Description }}">
             </a>
@@ -19,7 +20,7 @@
             <h2 class="center-text"style="color: #ebdbb2;">Shutter Speed: {{ .ShutterSpeed }}</h2>
             <h2 class="center-text"style="color: #ebdbb2;">Aperture: {{ .Aperture }}</h2>
             <h2 class="center-text"style="color: #ebdbb2;">Location: {{ .Location }}</h2>
-            <button hx-get="/main" hx-target="#theBody" hx-swap="innerHTML">Main Page</button><br>
+            <button hx-get="/main" hx-target="#theBody" hx-swap="innerHTML" hx-push-url="/main">Main Page</button><br>
         </div>
     </div>
     
