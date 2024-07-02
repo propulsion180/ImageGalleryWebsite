@@ -7,14 +7,10 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    
-    
-    <div class=image-container>
+    <div class=image-container hx-trigger="load" hx-push-url="/detail?path={{ .FilePath }}">
         <div class=image-item>
             <h1>Pictures taken by Migada Perera</h1>
-            <a href="/detail?path={{ .FilePath }}">
-                <img src="/{{ .FilePath }}" alt="{{ .Description }}">
-            </a>
+            <img src="/{{ .FilePath }}" alt="{{ .Description }}">
             <h2 class="center-text"style="color: #ebdbb2;">Description: {{ .Description }}</h2>
             <h2 class="center-text"style="color: #ebdbb2;">ISO: {{ .ISO }}</h2>
             <h2 class="center-text"style="color: #ebdbb2;">Shutter Speed: {{ .ShutterSpeed }}</h2>
