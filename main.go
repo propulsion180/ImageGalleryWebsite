@@ -6,14 +6,18 @@ import (
 	"encoding/hex"
 	"fmt"
 	"html/template"
-	"io"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"log"
-	"mime"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/chai2010/webp"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -238,6 +242,10 @@ func main() {
 	}
 
 	fs := http.FileServer(http.Dir("images"))
+	// http.Handle("/images/", http.StripPrefix("/images/", fs))
+
+	// http.HandleFunc()
+
 	http.Handle("/images/", http.StripPrefix("/images/", fs))
 
 	fs2 := http.FileServer(http.Dir("./static"))
@@ -346,61 +354,57 @@ func main() {
 		aperture := r.PostFormValue("aperture")
 		location := r.PostFormValue("location")
 
-		// Retrieve the file from form
-		file, _, err := r.FormFile("image")
+		file, header, err := r.FormFile("image")
+
 		if err != nil {
-			fmt.Fprintf(w, "Error retrieving file: %v", err)
+			fmt.Println("failed to get file from form")
 			return
 		}
+
 		defer file.Close()
 
-		// Read the first 512 bytes to determine the content type
-		buffer := make([]byte, 512)
-		_, err = file.Read(buffer)
+		var img image.Image
+
+		switch strings.ToLower(filepath.Ext(header.Filename)) {
+		case ".jpg", ".jpeg":
+			img, err = jpeg.Decode(file)
+		case ".png":
+			img, err = png.Decode(file)
+		default:
+			fmt.Println("unsuported file format")
+			return
+		}
+
 		if err != nil {
-			fmt.Fprintf(w, "Error reading file: %v", err)
-			return
+			fmt.Println("failed to decode file")
 		}
 
-		// Determine the content type of the file
-		contentType := http.DetectContentType(buffer)
-		ext, err := mime.ExtensionsByType(contentType)
-		if err != nil || len(ext) == 0 {
-			fmt.Fprintf(w, "Unable to determine file extension: %v", err)
-			return
-		}
+		webpFilename := strings.TrimSuffix(header.Filename, filepath.Ext(header.Filename)) + ".webp"
+		dst, err := os.Create(filepath.Join("images", webpFilename))
 
-		// Reset the file read pointer to the beginning
-		file.Seek(0, io.SeekStart)
-
-		// Create a temporary file with the correct extension
-		tempFile, err := os.CreateTemp("images", fmt.Sprintf("upload-*%s", ext[0]))
 		if err != nil {
-			fmt.Fprintf(w, "Unable to create temp file: %v", err)
-			return
-		}
-		defer tempFile.Close()
-
-		// Copy the uploaded file's content to the temporary file
-		_, err = io.Copy(tempFile, file)
-		if err != nil {
-			fmt.Fprintf(w, "Error saving file: %v", err)
+			fmt.Println("failed to make webp file")
 			return
 		}
 
-		// Get the file path
-		filePath := tempFile.Name()
+		defer dst.Close()
+
+		if err := webp.Encode(dst, img, &webp.Options{Lossless: false, Quality: 80}); err != nil {
+			fmt.Println("failed to encode image")
+			return
+		}
 
 		fmt.Println(description)
 		fmt.Println(iso)
 		fmt.Println(shutterSpeed)
 		fmt.Println(aperture)
-		fmt.Println(filePath)
+		fmt.Println(webpFilename)
+		filepath := "images/" + webpFilename
 
-		err = addImageMeta(db, ImageMeta{FilePath: filePath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
+		err = addImageMeta(db, ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 
 		tmpl := template.Must(template.ParseFiles("admin.html"))
-		tmpl.ExecuteTemplate(w, "simple-list", ImageMeta{FilePath: filePath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
+		tmpl.ExecuteTemplate(w, "simple-list", ImageMeta{FilePath: webpFilename, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 	})
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
