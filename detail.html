@@ -13,7 +13,7 @@
             <img src="/{{ .FilePath }}" alt="{{ .Description }}">
             <h2 class="center-text"style="color: #ebdbb2;">Description: {{ .Description }}</h2>
             <h2 class="center-text"style="color: #ebdbb2;">ISO: {{ .ISO }}</h2>
-            <h2 class="center-text"style="color: #ebdbb2;">Shutter Speed: {{ .ShutterSpeed }}</h2>
+            <h2 class="center-text"style="color: #ebdbb2;">Shutter Speed: {{ .ShutterSpeed }}s</h2>
             <h2 class="center-text"style="color: #ebdbb2;">Aperture: {{ .Aperture }}</h2>
             <h2 class="center-text"style="color: #ebdbb2;">Location: {{ .Location }}</h2>
             <button hx-get="/main" hx-target="#theBody" hx-swap="innerHTML" hx-push-url="/main">Main Page</button><br>
