@@ -124,6 +124,12 @@ func deleteImageMeta(db *sql.DB, filePath string) error {
 	return err
 }
 
+func setImageMeta(db *sql.DB, img ImageMeta) error {
+	updateSQL := `UPDATE image_metadata SET description = ?, iso = ?, shutterspeed = ?, aperture = ?, location = ? WHERE filepath = ?`
+	_, err := db.Exec(updateSQL, img.Description, img.ISO, img.ShutterSpeed, img.Aperture, img.Location, img.FilePath)
+	return err
+}
+
 // GetAllImageMeta retrieves all image metadata entries from the database
 func getAllImageMeta(db *sql.DB) (map[string][]ImageMeta, error) {
 	querySQL := `SELECT filepath, description, iso, shutterspeed, aperture, location FROM image_metadata`
@@ -404,7 +410,65 @@ func main() {
 		err = addImageMeta(db, ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 
 		tmpl := template.Must(template.ParseFiles("admin.html"))
-		tmpl.ExecuteTemplate(w, "simple-list", ImageMeta{FilePath: webpFilename, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
+		tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
+	})
+
+	http.HandleFunc("/admin/update/", func(w http.ResponseWriter, r *http.Request) {
+		if (r.Header.Get("HX-Request")) != "true" {
+			http.Redirect(w, r, "/admin", http.StatusFound)
+			return
+		}
+		filePath := r.URL.Path[len("/admin/update/"):]
+		if r.Method == http.MethodGet {
+			fmt.Println("is get in the update")
+
+			data, err := getImageMeta(db, filePath)
+			if err != nil {
+				fmt.Println("failed to get image's data for initial image")
+				return
+			}
+			t := template.Must(template.ParseFiles("updateform.html"))
+			t.Execute(w, data)
+		} else if r.Method == http.MethodPost {
+			fmt.Println("is post in the update")
+
+			r.ParseForm()
+			desc := r.Form.Get("description")
+			iso := r.Form.Get("iso")
+			ss := r.Form.Get("shutter-speed")
+			aperture := r.Form.Get("aperture")
+			loc := r.Form.Get("location")
+
+			fmt.Println("description: " + desc)
+			fmt.Println("ISO: " + iso)
+			fmt.Println("ShutterSpeed: " + ss)
+			fmt.Println("Aperture: " + aperture)
+			fmt.Println("Location: " + loc)
+
+			err := setImageMeta(db, ImageMeta{FilePath: filePath, Description: desc, ISO: iso, ShutterSpeed: ss, Aperture: aperture, Location: loc})
+			if err != nil {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Failed to updata the database entry"))
+				return
+			}
+			http.Redirect(w, r, createUrl("/", "/admin"), http.StatusFound)
+		}
+	})
+
+	http.HandleFunc("/admin/delete/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			return
+		}
+		filePath := r.URL.Path[len("/admin/delete/"):]
+		fmt.Printf("Deleting item with file path: %s\n", filePath)
+		response := "Deleted"
+		err := deleteImageMeta(db, filePath)
+		if err != nil {
+			response = "Failed"
+		}
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte(response))
 	})
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
@@ -436,7 +500,7 @@ func main() {
 				Name:     "session_token",
 				Value:    cval,
 				HttpOnly: true,
-				MaxAge:   600,
+				MaxAge:   7200,
 			}
 
 			err = addCookie(db, cval, uname)

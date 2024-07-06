@@ -1,7 +1,7 @@
-
-<h1 id="title">Pictures taken by Migada Perera</h1><br>
+<div class="center-stuff">
+<h1 id="title" class="center-item">Pictures taken by Migada Perera</h1><br>
 <button hx-get="/main" hx-target="#theBody" hx-swap="innerHTML" hx-push-url="/main">Main Page</button><br>
-<form hx-post="/admin/addimage/" hx-target="#image-list" hx-swap="beforeend" enctype="multipart/form-data" hx-replace-url="/admin/">
+<form id="theForm" class="center-item" hx-post="/admin/addimage/" hx-target="#image-list" hx-swap="beforeend" enctype="multipart/form-data" hx-replace-url="/admin/">
     <div>
         <label for="Description">Description</label>
         <input type="text" name="description" id="description" class="form-control" /><br><br>
@@ -25,13 +25,21 @@
     <div>
         <label for="file-chooser">image</label>
         <input type="file" name="image" id="file-chooser" class="form-control" accept="image/*"><br><br>
-
+    </div>
     <button type="submit">Submit</button>
 </form>
-<ul class="image-list" id="image-list">
-    {{ range .data }}
-    {{ block "simple-list" . }}
-    <li style="color: #ebdbb2;">{{ .FilePath}} - {{ .Description }} - {{ .ISO }} - {{ .ShutterSpeed }} - {{ .Aperture }} - {{ .Location }}</li>
+<div id="image-list">
+{{ range .data }}
+    {{ block "entry-list" . }}
+    <div class="center-item">
+        <div class="center-button-box"> 
+            <p id="{{ .FilePath }}" style="font-size: 18pt; color: #ebdbb2;">{{ .FilePath }} - {{ .Description }} - {{ .ISO }} - {{ .ShutterSpeed }} - {{ .Aperture }} - {{ .Location }}</p> 
+            <button hx-delete="/admin/delete/{{ .FilePath }}" hx-target="this" hx-swap="textContent">delete</button>
+            <button hx-get="/admin/update/{{ .FilePath }}" hx-target="#theForm" hx-swap="outerHTML">update</button>
+        </div>
+    </div>
     {{ end }}
-    {{ end }}
-</ul>
+{{ end }}
+</div>
+
+</div>

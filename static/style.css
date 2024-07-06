@@ -24,6 +24,11 @@ body {
     font-size: 12;
 }
 
+p {
+    font-family: 'Berkeley Mono', mono;
+    font-size: 20;
+}
+
 .li {
     color: #ebdbb2;
     font-family: 'Berkeley Mono', mono;
@@ -199,4 +204,43 @@ input[type="file"]:hover {
 
 .center-text {
     text-align: center;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-around;
+    width: 50%;
+}
+
+.button-container button {
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+.center-stuff {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.center-item {
+    text-align: center;
+}
+
+.center-button-box {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between the elements */
+}
+
+.center-button-box span {
+    font-size: 16px;
+}
+
+.center-button-box button {
+    padding: 10px 20px;
+    font-size: 16px;
 }
