@@ -10,6 +10,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -18,7 +19,9 @@ import (
 	"time"
 
 	"github.com/chai2010/webp"
+	"github.com/disintegration/imaging"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rwcarlsen/goexif/exif"
 )
 
 func convertToSHA256(in string) string {
@@ -41,6 +44,29 @@ type User struct {
 	Username string
 	Password string
 	admin    bool
+}
+
+func printIP(r *http.Request) {
+	forwarded := r.Header.Get("X-Forwarded-For")
+	if forwarded != "" {
+		// X-Forwarded-For can contain multiple IPs; the first one is the client IP
+		ip := strings.Split(forwarded, ",")[0]
+		fmt.Println(strings.TrimSpace(ip))
+	}
+
+	// Check the X-Real-Ip header for proxies/load balancers
+	realIP := r.Header.Get("X-Real-Ip")
+	if realIP != "" {
+		fmt.Println(realIP)
+	}
+
+	// Use RemoteAddr if no headers are set
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		fmt.Println(r.RemoteAddr)
+	}
+
+	fmt.Println(ip)
 }
 
 // Initialize the database and create the table if it doesn't exist
@@ -259,6 +285,7 @@ func main() {
 
 	fmt.Println("Starting Server")
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		printIP(r)
 		data := r.URL.Query().Get("data")
 		redir := "/main"
 		if data != "" {
@@ -270,6 +297,7 @@ func main() {
 	})
 
 	http.HandleFunc("/main", func(w http.ResponseWriter, r *http.Request) {
+		printIP(r)
 		if (r.Header.Get("HX-Request")) != "true" {
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
@@ -283,6 +311,7 @@ func main() {
 	})
 
 	http.HandleFunc("/detail", func(w http.ResponseWriter, r *http.Request) {
+		printIP(r)
 		u := r.URL.String()
 		if (r.Header.Get("HX-Request")) != "true" {
 			http.Redirect(w, r, createUrl("/", u), http.StatusFound)
@@ -307,6 +336,7 @@ func main() {
 	})
 
 	http.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
+		printIP(r)
 		if (r.Header.Get("HX-Request")) != "true" {
 			http.Redirect(w, r, createUrl("/", "/admin/"), http.StatusFound)
 			return
@@ -344,6 +374,7 @@ func main() {
 	})
 
 	http.HandleFunc("/admin/addimage/", func(w http.ResponseWriter, r *http.Request) {
+		printIP(r)
 		if (r.Header.Get("HX-Request")) != "true" {
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
@@ -394,6 +425,33 @@ func main() {
 		}
 
 		defer dst.Close()
+
+		file.Seek(0, 0) // Reset the file pointer to read EXIF data
+		exifData, err := exif.Decode(file)
+		if err != nil {
+			fmt.Println("failed to decode exif data")
+			return
+		}
+
+		orientation, err := exifData.Get(exif.Orientation)
+		if err != nil {
+			fmt.Println("faoled to get orientation")
+			return
+		}
+
+		orient, err := orientation.Int(0)
+		if err != nil {
+			fmt.Println("Failed to convert orientation to number")
+		}
+		fmt.Println("Image's orient is : ", orient)
+		switch orient {
+		case 3:
+			img = imaging.Rotate180(img)
+		case 6:
+			img = imaging.Rotate270(img)
+		case 8:
+			img = imaging.Rotate90(img)
+		}
 
 		if err := webp.Encode(dst, img, &webp.Options{Lossless: false, Quality: 80}); err != nil {
 			fmt.Println("failed to encode image")
@@ -472,6 +530,7 @@ func main() {
 	})
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		printIP(r)
 		fmt.Println(r.URL.String())
 		if r.Method == http.MethodPost {
 			fmt.Println("is a post ")
@@ -543,6 +602,7 @@ func main() {
 	})
 
 	http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		printIP(r)
 		if (r.Header.Get("HX-Request")) != "true" {
 			http.Redirect(w, r, createUrl("/", "/signup"), http.StatusFound)
 			return
@@ -588,6 +648,7 @@ func main() {
 	})
 
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		printIP(r)
 		c, err := r.Cookie("session_token")
 		if err != nil {
 			fmt.Println("Failed to get cookie")
