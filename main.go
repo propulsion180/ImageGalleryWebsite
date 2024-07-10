@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -267,6 +268,55 @@ func createUrl(goinTo string, path string) string {
 	return temp.String()
 }
 
+func descriptionCheck(desc string) bool {
+	if len(desc) > 50 {
+		return false
+	}
+	return true
+}
+
+func isoCheck(iso string) bool {
+	if len(iso) > 6 {
+		return false
+	}
+	isoreg := `^\d{2,6}$`
+	re := regexp.MustCompile(isoreg)
+	if !re.MatchString(iso) {
+		return false
+	}
+	return true
+}
+
+func shutterspeedCheck(ss string) bool {
+	if len(ss) > 7 {
+		return false
+	}
+	ssreg := `^(\d+|1/\d{4})$`
+	re := regexp.MustCompile(ssreg)
+	if !re.MatchString(ss) {
+		return false
+	}
+	return true
+}
+
+func apertureCheck(apt string) bool {
+	if len(apt) > 3 {
+		return false
+	}
+	aptreg := `^\d\.\d+$`
+	re := regexp.MustCompile(aptreg)
+	if !re.MatchString(apt) {
+		return false
+	}
+	return true
+}
+
+func locationCheck(loc string) bool {
+	if len(loc) > 340 {
+		return false
+	}
+	return true
+}
 func main() {
 	db, err := initDB("images.db")
 	if err != nil {
