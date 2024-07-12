@@ -522,7 +522,7 @@ func main() {
 		fmt.Println(shutterSpeed)
 		fmt.Println(aperture)
 		fmt.Println(outFilePath)
-		filepath := "images/" + outFilePath
+		filepath := outFilePath
 
 		tmpl := template.Must(template.ParseFiles("admin.html"))
 
