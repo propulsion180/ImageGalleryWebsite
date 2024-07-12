@@ -1,14 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"html/template"
 	"image"
-	"image/jpeg"
-	"image/png"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -317,6 +317,28 @@ func locationCheck(loc string) bool {
 	}
 	return true
 }
+
+func applyOrientation(img image.Image, orientation int) image.Image {
+	switch orientation {
+	case 2:
+		return imaging.FlipH(img)
+	case 3:
+		return imaging.Rotate180(img)
+	case 4:
+		return imaging.FlipV(img)
+	case 5:
+		return imaging.Transpose(img)
+	case 6:
+		return imaging.Rotate270(img)
+	case 7:
+		return imaging.Transverse(img)
+	case 8:
+		return imaging.Rotate90(img)
+	default:
+		return img
+	}
+}
+
 func main() {
 	db, err := initDB("images.db")
 	if err != nil {
@@ -442,69 +464,56 @@ func main() {
 		location := r.PostFormValue("location")
 
 		file, header, err := r.FormFile("image")
-
 		if err != nil {
-			fmt.Println("failed to get file from form")
+			http.Error(w, "Error reading file", http.StatusMethodNotAllowed)
 			return
 		}
-
 		defer file.Close()
 
-		var img image.Image
+		buf := new(bytes.Buffer)
+		io.Copy(buf, file)
 
-		switch strings.ToLower(filepath.Ext(header.Filename)) {
-		case ".jpg", ".jpeg":
-			img, err = jpeg.Decode(file)
-		case ".png":
-			img, err = png.Decode(file)
-		default:
-			fmt.Println("unsuported file format")
+		img, _, err := image.Decode(buf)
+		if err != nil {
+			http.Error(w, "Error decoding image", http.StatusInternalServerError)
 			return
 		}
 
+		buf.Reset()
+		file.Seek(0, io.SeekStart)
+		io.Copy(buf, file)
+
+		ex, err := exif.Decode(buf)
 		if err != nil {
-			fmt.Println("failed to decode file")
+			log.Println("No Exif data found, skipping orientation adjustment")
+		} else {
+			orientationTag, err := ex.Get(exif.Orientation)
+			if err == nil {
+				orientation, err := orientationTag.Int(0)
+				if err == nil {
+					img = applyOrientation(img, orientation)
+				}
+			}
 		}
 
-		webpFilename := strings.TrimSuffix(header.Filename, filepath.Ext(header.Filename)) + ".webp"
-		dst, err := os.Create(filepath.Join("images", webpFilename))
-
+		var webpBuf bytes.Buffer
+		err = webp.Encode(&webpBuf, img, &webp.Options{Lossless: false, Quality: 80})
 		if err != nil {
-			fmt.Println("failed to make webp file")
+			http.Error(w, "Error encoding webp image", http.StatusInternalServerError)
 			return
 		}
 
-		defer dst.Close()
-
-		file.Seek(0, 0) // Reset the file pointer to read EXIF data
-		exifData, err := exif.Decode(file)
+		outFilePath := filepath.Join("images", strings.TrimSuffix(header.Filename, filepath.Ext(header.Filename))+".webp")
+		outFile, err := os.Create(outFilePath)
 		if err != nil {
-			fmt.Println("failed to decode exif data" + err.Error())
+			http.Error(w, "Error saving WebP image", http.StatusInternalServerError)
 			return
 		}
+		defer outFile.Close()
 
-		orientation, err := exifData.Get(exif.Orientation)
+		_, err = outFile.Write(webpBuf.Bytes())
 		if err != nil {
-			fmt.Println("faoled to get orientation")
-			return
-		}
-
-		orient, err := orientation.Int(0)
-		if err != nil {
-			fmt.Println("Failed to convert orientation to number")
-		}
-		fmt.Println("Image's orient is : ", orient)
-		switch orient {
-		case 3:
-			img = imaging.Rotate180(img)
-		case 6:
-			img = imaging.Rotate270(img)
-		case 8:
-			img = imaging.Rotate90(img)
-		}
-
-		if err := webp.Encode(dst, img, &webp.Options{Lossless: false, Quality: 80}); err != nil {
-			fmt.Println("failed to encode image")
+			http.Error(w, "Error writing Webp image to file", http.StatusInternalServerError)
 			return
 		}
 
@@ -512,8 +521,8 @@ func main() {
 		fmt.Println(iso)
 		fmt.Println(shutterSpeed)
 		fmt.Println(aperture)
-		fmt.Println(webpFilename)
-		filepath := "images/" + webpFilename
+		fmt.Println(outFilePath)
+		filepath := "images/" + outFilePath
 
 		tmpl := template.Must(template.ParseFiles("admin.html"))
 
