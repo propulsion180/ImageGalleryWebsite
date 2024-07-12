@@ -32,10 +32,14 @@
 {{ range .data }}
     {{ block "entry-list" . }}
     <div class="center-item">
-        <div class="center-button-box"> 
-            <p id="{{ .FilePath }}" style="font-size: 18pt; color: #ebdbb2;">{{ .FilePath }} - {{ .Description }} - {{ .ISO }} - {{ .ShutterSpeed }} - {{ .Aperture }} - {{ .Location }}</p> 
-            <button hx-delete="/admin/delete/{{ .FilePath }}" hx-target="this" hx-swap="textContent">delete</button>
-            <button hx-get="/admin/update/{{ .FilePath }}" hx-target="#theForm" hx-swap="outerHTML">update</button>
+        <div class="center-button-box">
+            {{ if eq .Description "Failed"}}
+            <p id="{{ .FilePath }}" style="font-size: 18pt; color: #ebdbb2;">{{ .Description }} {{.Location }}</p>
+            {{ else }}
+                <p id="{{ .FilePath }}" style="font-size: 18pt; color: #ebdbb2;">{{ .FilePath }} - {{ .Description }} - {{ .ISO }} - {{ .ShutterSpeed }} - {{ .Aperture }} - {{ .Location }}</p> 
+                <button hx-delete="/admin/delete/{{ .FilePath }}" hx-target="this" hx-swap="textContent">delete</button>
+                <button hx-get="/admin/update/{{ .FilePath }}" hx-target="#theForm" hx-swap="outerHTML">update</button>
+            {{ end }}
         </div>
     </div>
     {{ end }}

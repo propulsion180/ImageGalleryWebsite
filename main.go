@@ -479,7 +479,7 @@ func main() {
 		file.Seek(0, 0) // Reset the file pointer to read EXIF data
 		exifData, err := exif.Decode(file)
 		if err != nil {
-			fmt.Println("failed to decode exif data")
+			fmt.Println("failed to decode exif data" + err.Error())
 			return
 		}
 
@@ -515,9 +515,25 @@ func main() {
 		fmt.Println(webpFilename)
 		filepath := "images/" + webpFilename
 
+		tmpl := template.Must(template.ParseFiles("admin.html"))
+
+		if !isoCheck(iso) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "ISO invalid: Example of valid: 400, 25600"})
+			return
+		}
+
+		if !shutterspeedCheck(shutterSpeed) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "ShutterSpeed invalid invalid: Example of valid: 1/2000, 300"})
+			return
+		}
+
+		if !apertureCheck(aperture) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "Aperture invalid: Example of valid: 4.0, 3.2"})
+			return
+		}
+
 		err = addImageMeta(db, ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 
-		tmpl := template.Must(template.ParseFiles("admin.html"))
 		tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 	})
 
