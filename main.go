@@ -588,6 +588,36 @@ func main() {
 			fmt.Println("Aperture: " + aperture)
 			fmt.Println("Location: " + loc)
 
+			if !descriptionCheck(desc) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Description Invalid"))
+				return
+			}
+
+			if !isoCheck(iso) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("ISO invalid"))
+				return
+			}
+
+			if !shutterspeedCheck(ss) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Shutter Speed invalid"))
+				return
+			}
+
+			if !apertureCheck(aperture) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Shutter Speed invalid"))
+				return
+			}
+
+			if !locationCheck(loc) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Shutter Speed invalid"))
+				return
+			}
+
 			err := setImageMeta(db, ImageMeta{FilePath: filePath, Description: desc, ISO: iso, ShutterSpeed: ss, Aperture: aperture, Location: loc})
 			if err != nil {
 				w.Header().Set("Content-Type", "text/plain")
