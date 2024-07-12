@@ -339,6 +339,19 @@ func applyOrientation(img image.Image, orientation int) image.Image {
 	}
 }
 
+func unameCheck(un string) bool {
+	return len(un) <= 10
+}
+
+func passwordCheck(pw string) bool {
+	if len(pw) >= 8 {
+		return false
+	}
+	matchstring := `^(?=.*[A-Z])(?=.*\d).+$`
+	re := regexp.MustCompile(matchstring)
+	return re.MatchString(pw)
+}
+
 func main() {
 	db, err := initDB("images.db")
 	if err != nil {
@@ -727,6 +740,17 @@ func main() {
 			r.ParseForm()
 			uname := r.Form.Get("username")
 			pword := r.Form.Get("password")
+			tmpl := template.Must(template.ParseFiles("login.html"))
+
+			if !unameCheck(uname) {
+				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Invalid Username"})
+				return
+			}
+
+			if !passwordCheck(pword) {
+				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Invalid Password"})
+				return
+			}
 
 			ts := checkUser(db, uname, pword)
 			fmt.Println(ts)
@@ -737,7 +761,6 @@ func main() {
 					fmt.Println("Unsuccessful Sign Up")
 					fmt.Println(err)
 					ss := err.Error() == "UNIQUE constraint failed: users.username"
-					tmpl := template.Must(template.ParseFiles("login.html"))
 					if ss {
 						tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Username Already Exists"})
 					} else {
