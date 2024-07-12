@@ -526,6 +526,11 @@ func main() {
 
 		tmpl := template.Must(template.ParseFiles("admin.html"))
 
+		if !descriptionCheck(description) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "Description invalid: Can't be more than 50 characters long"})
+			return
+		}
+
 		if !isoCheck(iso) {
 			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "ISO invalid: Example of valid: 400, 25600"})
 			return
@@ -538,6 +543,11 @@ func main() {
 
 		if !apertureCheck(aperture) {
 			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "Aperture invalid: Example of valid: 4.0, 3.2"})
+			return
+		}
+
+		if !locationCheck(location) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "Location invalid: Can't be more than 340 characters long"})
 			return
 		}
 
