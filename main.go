@@ -18,6 +18,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/chai2010/webp"
 	"github.com/disintegration/imaging"
@@ -347,9 +348,23 @@ func passwordCheck(pw string) bool {
 	if len(pw) >= 8 {
 		return false
 	}
-	matchstring := `^(?=.*[A-Z])(?=.*\d).+$`
-	re := regexp.MustCompile(matchstring)
-	return re.MatchString(pw)
+	caps := false
+	num := false
+	for _, val := range pw {
+		if unicode.IsUpper(val) {
+			caps = true
+		}
+
+		if unicode.IsNumber(val) {
+			num = true
+		}
+	}
+
+	if caps || num {
+		return true
+	}
+
+	return false
 }
 
 func main() {

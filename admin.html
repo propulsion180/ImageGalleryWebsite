@@ -1,49 +1,110 @@
 <div class="center-stuff">
-<h1 id="title" class="center-item">Pictures taken by Migada Perera</h1><br>
-<button hx-get="/main" hx-target="#theBody" hx-swap="innerHTML" hx-push-url="/main">Main Page</button><br>
-<form id="theForm" class="center-item" hx-post="/admin/addimage/" hx-target="#image-list" hx-swap="beforeend" enctype="multipart/form-data" hx-replace-url="/admin/">
-    <div>
-        <label for="Description">Description</label>
-        <input type="text" name="description" id="description" class="form-control" /><br><br>
-    </div>
-    <div>
-        <label for="iso">ISO</label>
-        <input type="text" name="iso" id="iso" class="form-control"><br><br>
-    </div>
-    <div>
-        <label for="shutter-speed">Shutter Speed</label>
-        <input type="text" name="shutter-speed" id="shutter-speed" class="form-control"><br><br>
-    </div>
-    <div>
-        <label for="aperture">Aperture</label>
-        <input type="text" name="aperture" id="aperture" class="form-control"><br><br>
-    </div>
-    <div>
-        <label for="location">Location</label>
-        <input type="text" name="location" id="location" class="form-control"><br><br>
-    </div>
-    <div>
-        <label for="file-chooser">image</label>
-        <input type="file" name="image" id="file-chooser" class="form-control" accept="image/*"><br><br>
-    </div>
-    <button type="submit">Submit</button>
-</form>
-<div id="image-list">
-{{ range .data }}
-    {{ block "entry-list" . }}
-    <div class="center-item">
-        <div class="center-button-box">
-            {{ if eq .Description "Failed"}}
-            <p id="{{ .FilePath }}" style="font-size: 18pt; color: #ebdbb2;">{{ .Description }} {{.Location }}</p>
-            {{ else }}
-                <p id="{{ .FilePath }}" style="font-size: 18pt; color: #ebdbb2;">{{ .FilePath }} - {{ .Description }} - {{ .ISO }} - {{ .ShutterSpeed }} - {{ .Aperture }} - {{ .Location }}</p> 
-                <button hx-delete="/admin/delete/{{ .FilePath }}" hx-target="this" hx-swap="textContent">delete</button>
-                <button hx-get="/admin/update/{{ .FilePath }}" hx-target="#theForm" hx-swap="outerHTML">update</button>
-            {{ end }}
+    <h1 id="title" class="center-item">Pictures taken by Migada Perera</h1>
+    <br />
+    <button
+        hx-get="/main"
+        hx-target="#theBody"
+        hx-swap="innerHTML"
+        hx-push-url="/main"
+    >
+        Home</button
+    ><br />
+    <form
+        id="theForm"
+        class="center-item"
+        hx-post="/admin/addimage/"
+        hx-target="#image-list"
+        hx-swap="beforeend"
+        enctype="multipart/form-data"
+        hx-replace-url="/admin/"
+    >
+        <div>
+            <label for="Description">Description</label>
+            <input
+                type="text"
+                name="description"
+                id="description"
+                class="form-control"
+            /><br /><br />
         </div>
+        <div>
+            <label for="iso">ISO</label>
+            <input
+                type="text"
+                name="iso"
+                id="iso"
+                class="form-control"
+            /><br /><br />
+        </div>
+        <div>
+            <label for="shutter-speed">Shutter Speed</label>
+            <input
+                type="text"
+                name="shutter-speed"
+                id="shutter-speed"
+                class="form-control"
+            /><br /><br />
+        </div>
+        <div>
+            <label for="aperture">Aperture</label>
+            <input
+                type="text"
+                name="aperture"
+                id="aperture"
+                class="form-control"
+            /><br /><br />
+        </div>
+        <div>
+            <label for="location">Location</label>
+            <input
+                type="text"
+                name="location"
+                id="location"
+                class="form-control"
+            /><br /><br />
+        </div>
+        <div>
+            <label for="file-chooser">image</label>
+            <input
+                type="file"
+                name="image"
+                id="file-chooser"
+                class="form-control"
+                accept="image/*"
+            /><br /><br />
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="image-list">
+        {{ range .data }} {{ block "entry-list" . }}
+        <div class="center-item">
+            <div class="center-button-box">
+                {{ if eq .Description "Failed"}}
+                <p id="{{ .FilePath }}" style="font-size: 18pt; color: #ebdbb2">
+                    {{ .Description }} {{.Location }}
+                </p>
+                {{ else }}
+                <p id="{{ .FilePath }}" style="font-size: 18pt; color: #ebdbb2">
+                    {{ .FilePath }} - {{ .Description }} - {{ .ISO }} - {{
+                    .ShutterSpeed }} - {{ .Aperture }} - {{ .Location }}
+                </p>
+                <button
+                    hx-delete="/admin/delete/{{ .FilePath }}"
+                    hx-target="this"
+                    hx-swap="textContent"
+                >
+                    delete
+                </button>
+                <button
+                    hx-get="/admin/update/{{ .FilePath }}"
+                    hx-target="#theForm"
+                    hx-swap="outerHTML"
+                >
+                    update
+                </button>
+                {{ end }}
+            </div>
+        </div>
+        {{ end }} {{ end }}
     </div>
-    {{ end }}
-{{ end }}
-</div>
-
 </div>
