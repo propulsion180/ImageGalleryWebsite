@@ -666,11 +666,23 @@ func main() {
 			uname := r.Form.Get("username")
 			pword := r.Form.Get("password")
 
+			t := template.Must(template.ParseFiles("login.html"))
+
+			if !unameCheck(uname) {
+				t.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsucsessful Login"})
+				return
+			}
+
+			if !passwordCheck(pword) {
+				t.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsucsessful Login"})
+				return
+			}
+
 			userexists := checkUser(db, uname, pword)
 
 			if !userexists {
 				fmt.Println("user doesn't exist")
-				t := template.Must(template.ParseFiles("login.html"))
+
 				t.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsucsessful Login"})
 				return
 			}
