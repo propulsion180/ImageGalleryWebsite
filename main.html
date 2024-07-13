@@ -2,16 +2,42 @@
     <div class="image-item">
         <h1>Pictures taken by Migada Perera</h1>
         <button onclick="window.location.href='/logout';">Logout</button>
-        <button hx-get="/admin" hx-target="#theBody" hx-swap="innerHTML" hx-push-url="/admin">Admin Page</button>
-        <button hx-get="/login" hx-target="#theBody" hx-swap="innerHTML" hx-push-url="/login">Login Page</button>
-        <button hx-get="/signup" hx-target="#theBody" hx-swap="innerHTML" hx-push-url="/signup">Signup Page</button>
+        <button
+            hx-get="/admin"
+            hx-target="#theBody"
+            hx-swap="innerHTML"
+            hx-push-url="/admin"
+        >
+            Admin
+        </button>
+        <button
+            hx-get="/login"
+            hx-target="#theBody"
+            hx-swap="innerHTML"
+            hx-push-url="/login"
+        >
+            Login
+        </button>
+        <button
+            hx-get="/signup"
+            hx-target="#theBody"
+            hx-swap="innerHTML"
+            hx-push-url="/signup"
+        >
+            Signup
+        </button>
     </div>
 </div>
 <div class="allimage-grid">
     {{ range .data }}
     <div class="allimage-item">
-        <a hx-get="/detail?path={{ .FilePath }}" hx-target="#theBody" hx-swap="innerHTML" hx-push-url="/detail?path={{ .FilePath }}">
-            <img src="/{{ .FilePath }}" alt="{{ .Description }}">
+        <a
+            hx-get="/detail?path={{ .FilePath }}"
+            hx-target="#theBody"
+            hx-swap="innerHTML"
+            hx-push-url="/detail?path={{ .FilePath }}"
+        >
+            <img src="/{{ .FilePath }}" alt="{{ .Description }}" />
         </a>
     </div>
     {{ end }}

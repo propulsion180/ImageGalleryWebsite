@@ -1,22 +1,24 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"html/template"
 	"image"
-	"image/jpeg"
-	"image/png"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/chai2010/webp"
 	"github.com/disintegration/imaging"
@@ -267,6 +269,104 @@ func createUrl(goinTo string, path string) string {
 	return temp.String()
 }
 
+func descriptionCheck(desc string) bool {
+	if len(desc) > 50 {
+		return false
+	}
+	return true
+}
+
+func isoCheck(iso string) bool {
+	if len(iso) > 6 {
+		return false
+	}
+	isoreg := `^\d{2,6}$`
+	re := regexp.MustCompile(isoreg)
+	if !re.MatchString(iso) {
+		return false
+	}
+	return true
+}
+
+func shutterspeedCheck(ss string) bool {
+	if len(ss) > 7 {
+		return false
+	}
+	ssreg := `^(\d+|1/\d{4})$`
+	re := regexp.MustCompile(ssreg)
+	if !re.MatchString(ss) {
+		return false
+	}
+	return true
+}
+
+func apertureCheck(apt string) bool {
+	if len(apt) > 3 {
+		return false
+	}
+	aptreg := `^\d\.\d+$`
+	re := regexp.MustCompile(aptreg)
+	if !re.MatchString(apt) {
+		return false
+	}
+	return true
+}
+
+func locationCheck(loc string) bool {
+	if len(loc) > 340 {
+		return false
+	}
+	return true
+}
+
+func applyOrientation(img image.Image, orientation int) image.Image {
+	switch orientation {
+	case 2:
+		return imaging.FlipH(img)
+	case 3:
+		return imaging.Rotate180(img)
+	case 4:
+		return imaging.FlipV(img)
+	case 5:
+		return imaging.Transpose(img)
+	case 6:
+		return imaging.Rotate270(img)
+	case 7:
+		return imaging.Transverse(img)
+	case 8:
+		return imaging.Rotate90(img)
+	default:
+		return img
+	}
+}
+
+func unameCheck(un string) bool {
+	return len(un) <= 10
+}
+
+func passwordCheck(pw string) bool {
+	if len(pw) >= 8 {
+		return false
+	}
+	caps := false
+	num := false
+	for _, val := range pw {
+		if unicode.IsUpper(val) {
+			caps = true
+		}
+
+		if unicode.IsNumber(val) {
+			num = true
+		}
+	}
+
+	if caps || num {
+		return true
+	}
+
+	return false
+}
+
 func main() {
 	db, err := initDB("images.db")
 	if err != nil {
@@ -392,69 +492,56 @@ func main() {
 		location := r.PostFormValue("location")
 
 		file, header, err := r.FormFile("image")
-
 		if err != nil {
-			fmt.Println("failed to get file from form")
+			http.Error(w, "Error reading file", http.StatusMethodNotAllowed)
 			return
 		}
-
 		defer file.Close()
 
-		var img image.Image
+		buf := new(bytes.Buffer)
+		io.Copy(buf, file)
 
-		switch strings.ToLower(filepath.Ext(header.Filename)) {
-		case ".jpg", ".jpeg":
-			img, err = jpeg.Decode(file)
-		case ".png":
-			img, err = png.Decode(file)
-		default:
-			fmt.Println("unsuported file format")
+		img, _, err := image.Decode(buf)
+		if err != nil {
+			http.Error(w, "Error decoding image", http.StatusInternalServerError)
 			return
 		}
 
+		buf.Reset()
+		file.Seek(0, io.SeekStart)
+		io.Copy(buf, file)
+
+		ex, err := exif.Decode(buf)
 		if err != nil {
-			fmt.Println("failed to decode file")
+			log.Println("No Exif data found, skipping orientation adjustment")
+		} else {
+			orientationTag, err := ex.Get(exif.Orientation)
+			if err == nil {
+				orientation, err := orientationTag.Int(0)
+				if err == nil {
+					img = applyOrientation(img, orientation)
+				}
+			}
 		}
 
-		webpFilename := strings.TrimSuffix(header.Filename, filepath.Ext(header.Filename)) + ".webp"
-		dst, err := os.Create(filepath.Join("images", webpFilename))
-
+		var webpBuf bytes.Buffer
+		err = webp.Encode(&webpBuf, img, &webp.Options{Lossless: false, Quality: 80})
 		if err != nil {
-			fmt.Println("failed to make webp file")
+			http.Error(w, "Error encoding webp image", http.StatusInternalServerError)
 			return
 		}
 
-		defer dst.Close()
-
-		file.Seek(0, 0) // Reset the file pointer to read EXIF data
-		exifData, err := exif.Decode(file)
+		outFilePath := filepath.Join("images", strings.TrimSuffix(header.Filename, filepath.Ext(header.Filename))+".webp")
+		outFile, err := os.Create(outFilePath)
 		if err != nil {
-			fmt.Println("failed to decode exif data")
+			http.Error(w, "Error saving WebP image", http.StatusInternalServerError)
 			return
 		}
+		defer outFile.Close()
 
-		orientation, err := exifData.Get(exif.Orientation)
+		_, err = outFile.Write(webpBuf.Bytes())
 		if err != nil {
-			fmt.Println("faoled to get orientation")
-			return
-		}
-
-		orient, err := orientation.Int(0)
-		if err != nil {
-			fmt.Println("Failed to convert orientation to number")
-		}
-		fmt.Println("Image's orient is : ", orient)
-		switch orient {
-		case 3:
-			img = imaging.Rotate180(img)
-		case 6:
-			img = imaging.Rotate270(img)
-		case 8:
-			img = imaging.Rotate90(img)
-		}
-
-		if err := webp.Encode(dst, img, &webp.Options{Lossless: false, Quality: 80}); err != nil {
-			fmt.Println("failed to encode image")
+			http.Error(w, "Error writing Webp image to file", http.StatusInternalServerError)
 			return
 		}
 
@@ -462,12 +549,38 @@ func main() {
 		fmt.Println(iso)
 		fmt.Println(shutterSpeed)
 		fmt.Println(aperture)
-		fmt.Println(webpFilename)
-		filepath := "images/" + webpFilename
+		fmt.Println(outFilePath)
+		filepath := outFilePath
+
+		tmpl := template.Must(template.ParseFiles("admin.html"))
+
+		if !descriptionCheck(description) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "Description invalid: Can't be more than 50 characters long"})
+			return
+		}
+
+		if !isoCheck(iso) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "ISO invalid: Example of valid: 400, 25600"})
+			return
+		}
+
+		if !shutterspeedCheck(shutterSpeed) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "ShutterSpeed invalid invalid: Example of valid: 1/2000, 300"})
+			return
+		}
+
+		if !apertureCheck(aperture) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "Aperture invalid: Example of valid: 4.0, 3.2"})
+			return
+		}
+
+		if !locationCheck(location) {
+			tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: "Failed", ISO: "", ShutterSpeed: "", Aperture: "", Location: "Location invalid: Can't be more than 340 characters long"})
+			return
+		}
 
 		err = addImageMeta(db, ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 
-		tmpl := template.Must(template.ParseFiles("admin.html"))
 		tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 	})
 
@@ -502,6 +615,36 @@ func main() {
 			fmt.Println("ShutterSpeed: " + ss)
 			fmt.Println("Aperture: " + aperture)
 			fmt.Println("Location: " + loc)
+
+			if !descriptionCheck(desc) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Description Invalid"))
+				return
+			}
+
+			if !isoCheck(iso) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("ISO invalid"))
+				return
+			}
+
+			if !shutterspeedCheck(ss) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Shutter Speed invalid"))
+				return
+			}
+
+			if !apertureCheck(aperture) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Shutter Speed invalid"))
+				return
+			}
+
+			if !locationCheck(loc) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.Write([]byte("Shutter Speed invalid"))
+				return
+			}
 
 			err := setImageMeta(db, ImageMeta{FilePath: filePath, Description: desc, ISO: iso, ShutterSpeed: ss, Aperture: aperture, Location: loc})
 			if err != nil {
@@ -538,11 +681,23 @@ func main() {
 			uname := r.Form.Get("username")
 			pword := r.Form.Get("password")
 
+			t := template.Must(template.ParseFiles("login.html"))
+
+			if !unameCheck(uname) {
+				t.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsucsessful Login"})
+				return
+			}
+
+			if !passwordCheck(pword) {
+				t.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsucsessful Login"})
+				return
+			}
+
 			userexists := checkUser(db, uname, pword)
 
 			if !userexists {
 				fmt.Println("user doesn't exist")
-				t := template.Must(template.ParseFiles("login.html"))
+
 				t.ExecuteTemplate(w, "titleb", map[string]string{"data": "Unsucsessful Login"})
 				return
 			}
@@ -612,6 +767,17 @@ func main() {
 			r.ParseForm()
 			uname := r.Form.Get("username")
 			pword := r.Form.Get("password")
+			tmpl := template.Must(template.ParseFiles("login.html"))
+
+			if !unameCheck(uname) {
+				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Invalid Username"})
+				return
+			}
+
+			if !passwordCheck(pword) {
+				tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Invalid Password"})
+				return
+			}
 
 			ts := checkUser(db, uname, pword)
 			fmt.Println(ts)
@@ -622,7 +788,6 @@ func main() {
 					fmt.Println("Unsuccessful Sign Up")
 					fmt.Println(err)
 					ss := err.Error() == "UNIQUE constraint failed: users.username"
-					tmpl := template.Must(template.ParseFiles("login.html"))
 					if ss {
 						tmpl.ExecuteTemplate(w, "titleb", map[string]string{"data": "Username Already Exists"})
 					} else {
