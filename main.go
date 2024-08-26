@@ -292,7 +292,7 @@ func shutterspeedCheck(ss string) bool {
 	if len(ss) > 7 {
 		return false
 	}
-	ssreg := `^(\d+|1/\d{4})$`
+	ssreg := `^(\d+|1/\d{1,5})$`
 	re := regexp.MustCompile(ssreg)
 	if !re.MatchString(ss) {
 		return false
@@ -328,10 +328,6 @@ func applyOrientation(img image.Image, orientation int) image.Image {
 	case 4:
 		return imaging.FlipV(img)
 	case 5:
-		return imaging.Transpose(img)
-	case 6:
-		return imaging.Rotate270(img)
-	case 7:
 		return imaging.Transverse(img)
 	case 8:
 		return imaging.Rotate90(img)
@@ -524,12 +520,15 @@ func main() {
 			}
 		}
 
+		fmt.Println("done here")
+
 		var webpBuf bytes.Buffer
 		err = webp.Encode(&webpBuf, img, &webp.Options{Lossless: false, Quality: 80})
 		if err != nil {
 			http.Error(w, "Error encoding webp image", http.StatusInternalServerError)
 			return
 		}
+		fmt.Println("done here 2")
 
 		outFilePath := filepath.Join("images", strings.TrimSuffix(header.Filename, filepath.Ext(header.Filename))+".webp")
 		outFile, err := os.Create(outFilePath)
@@ -539,11 +538,15 @@ func main() {
 		}
 		defer outFile.Close()
 
+		fmt.Println("done here 3")
+
 		_, err = outFile.Write(webpBuf.Bytes())
 		if err != nil {
 			http.Error(w, "Error writing Webp image to file", http.StatusInternalServerError)
 			return
 		}
+
+		fmt.Println("done here 3")
 
 		fmt.Println(description)
 		fmt.Println(iso)
@@ -579,8 +582,10 @@ func main() {
 			return
 		}
 
-		err = addImageMeta(db, ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
+		fmt.Println("done here 6")
 
+		err = addImageMeta(db, ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
+		fmt.Println("done", err)
 		tmpl.ExecuteTemplate(w, "entry-list", ImageMeta{FilePath: filepath, Description: description, ISO: iso, ShutterSpeed: shutterSpeed, Aperture: aperture, Location: location})
 	})
 
