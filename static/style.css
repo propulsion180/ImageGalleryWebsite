@@ -1,18 +1,18 @@
 @font-face {
-    font-family: 'Berkeley';  /* Assign a name to your font */
-    src: url('/home/mp/imgGalleryPOC/static/Berkeley MonoMonoVariable-Regular.woff2') format('woff2');  /* Path to your WOFF2 font file */
+    font-family: "Berkeley"; /* Assign a name to your font */
+    src: url("/home/mp/imgGalleryPOC/static/BerkeleMonoVariable-Regular.woff2")
+        format("woff2"); /* Path to your WOFF2 font file */
 }
-
 
 h1 {
     color: #ebdbb2;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 18;
 }
 
 h2 {
     color: #ebdbb2;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 14;
 }
 
@@ -20,18 +20,18 @@ body {
     background: #282828;
     margin: 10;
     padding: 10;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 12;
 }
 
 p {
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 20;
 }
 
 .li {
     color: #ebdbb2;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 12;
 }
 
@@ -42,18 +42,18 @@ form {
     background: #282828;
     color: #ebdbb2;
     border-radius: 10px;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 10;
 }
 
 button {
     background-color: #3c3836;
     color: #ebdbb2;
-    padding : 10px 20px;
+    padding: 10px 20px;
     margin-top: 20px;
     border-radius: 10px;
     border: none;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 10;
 }
 
@@ -61,11 +61,11 @@ button:hover {
     background-color: #ebdbb2;
     color: #282828;
     border: none;
-    border-radius: 10px
+    border-radius: 10px;
 }
 
 input[type="text"],
-input[type="password"]{
+input[type="password"] {
     width: 25%;
     background-color: #7c6f64;
     color: #ebdbb2;
@@ -73,11 +73,11 @@ input[type="password"]{
     cursor: ponter;
     padding: 10px;
     border-radius: 10px;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 12;
 }
 input[type="text"],
-input[type="password"]:hover{
+input[type="password"]:hover {
     width: 25%;
     background-color: #7c6f64;
     color: #ebdbb2;
@@ -96,7 +96,7 @@ input[type="submit"] {
     padding: 10px;
     border-radius: 10px;
     cursor: pointer;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 12;
 }
 
@@ -108,7 +108,7 @@ input[type="submit"]:hover {
 
 input[type="checkbox"] {
     background: #3c3836;
-    accent-color:   #3c3836;
+    accent-color: #3c3836;
     color: #ebdbb2;
 }
 
@@ -181,15 +181,14 @@ input[type="file"]:hover {
 .image-item img {
     max-width: 100%;
     height: auto;
-    border-radius:0px;
+    border-radius: 0px;
 }
 
 .image-item p {
     color: #ebdbb2;
-    font-family: 'Berkeley Mono', mono;
+    font-family: "Berkeley Mono", mono;
     font-size: 14px;
 }
-
 
 .center-div {
     display: flex;
