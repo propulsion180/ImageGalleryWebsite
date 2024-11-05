@@ -1,6 +1,6 @@
 @font-face {
-    font-family: "Berkeley"; /* Assign a name to your font */
-    src: url("/home/mp/imgGalleryPOC/static/BerkeleMonoVariable-Regular.woff2")
+    font-family: "Berkeley Mono"; /* Assign a name to your font */
+    src: url("/static/BerkeleyMonoVariable-Regular.woff2")
         format("woff2"); /* Path to your WOFF2 font file */
 }
 
