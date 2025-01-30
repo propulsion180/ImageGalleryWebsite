@@ -341,7 +341,7 @@ func unameCheck(un string) bool {
 }
 
 func passwordCheck(pw string) bool {
-	if len(pw) >= 8 {
+	if len(pw) < 8 {
 		return false
 	}
 	caps := false
