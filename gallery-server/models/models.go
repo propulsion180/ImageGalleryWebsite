@@ -12,5 +12,5 @@ type ImageMeta struct {
 type User struct {
 	Username string
 	Password string
-	admin    bool
+	Admin    bool
 }
