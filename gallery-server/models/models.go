@@ -14,3 +14,14 @@ type User struct {
 	Password string
 	Admin    bool
 }
+
+type LoginData struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	Message  string `json:"message"`
+	Username string `json:"username"`
+	Admin    bool   `json:"admin"`
+}
