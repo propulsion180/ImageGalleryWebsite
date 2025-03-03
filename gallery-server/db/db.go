@@ -90,15 +90,15 @@ func CheckToken(db *sql.DB, tkn string, usr models.User) bool {
 	return token == tkn
 }
 
-func DeleteToken(db *sql.DB, username string) bool {
+func DeleteToken(db *sql.DB, username string) error {
 	stmt := `UPDATE users SET token=? WHERE username=?;`
 	_, err := db.Exec(stmt, "", username)
 
 	if err != nil {
 		log.Println("failed to delete the token the error was this: ", err.Error())
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
 //user functions
@@ -230,7 +230,7 @@ func SetImageMeta(db *sql.DB, img *models.ImageMeta, setter string) error {
 }
 
 // GetAllImageMeta retrieves all image metadata entries from the database
-func GetAllImageMeta(db *sql.DB) (map[string][]models.ImageMeta, error) {
+func GetAllImageMeta(db *sql.DB) ([]models.ImageMeta, error) {
 	querySQL := `SELECT filepath, description, iso, shutterspeed, aperture, location FROM image_metadata`
 	rows, err := db.Query(querySQL)
 	if err != nil {
@@ -250,25 +250,16 @@ func GetAllImageMeta(db *sql.DB) (map[string][]models.ImageMeta, error) {
 		images = append(images, img)
 	}
 
-	return map[string][]models.ImageMeta{"data": images}, nil
+	return images, nil
 }
 
-func GetImageMeta(db *sql.DB, filePath string, getter string) (*models.ImageMeta, error) {
-	ad, err := IsAdmin(db, getter)
-	if err != nil {
-		log.Println("error checking admin in getimagemeta: ", err.Error())
-		return nil, err
-	}
-	if !ad {
-		log.Println("unpriveleged user " + getter + "tried to add an image")
-		return nil, nil
-	}
+func GetImageMeta(db *sql.DB, filePath string) (*models.ImageMeta, error) {
 	querySQL := `SELECT filepath, description, iso, shutterspeed, aperture, location FROM image_metadata WHERE filepath = ?`
 	row := db.QueryRow(querySQL, filePath)
 	var img models.ImageMeta
-	err = row.Scan(&img.FilePath, &img.Description, &img.ISO, &img.ShutterSpeed, &img.Aperture, &img.Location)
+	err := row.Scan(&img.FilePath, &img.Description, &img.ISO, &img.ShutterSpeed, &img.Aperture, &img.Location)
 	if err != nil {
-		log.Println("faaild to scan image meta from the databse: ", err.Error())
+		log.Println("failed to scan image meta from the databse: ", err.Error())
 		return nil, err
 	}
 	return &img, nil
