@@ -5,8 +5,17 @@ import (
 	"gallery-server/auth"
 	"gallery-server/db"
 	"gallery-server/models"
+	"image"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/chai2010/webp"
+
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 func AllImageHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,4 +64,111 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to encode image", http.StatusInternalServerError)
 		return
 	}
+}
+
+func NewImageHandler(w http.ResponseWriter, r *http.Request) {
+
+	var img models.ImageMeta
+	err := r.ParseMultipartForm(20 << 20)
+	if err != nil {
+		log.Println("failed to parse form data: ", err.Error())
+		http.Error(w, "Error parsing the form", http.StatusBadRequest)
+		return
+	}
+
+	file, handler, err := r.FormFile("image")
+	if err != nil {
+		log.Println("failed to retrieive the file: ", err.Error())
+		http.Error(w, "Error retrieving the file", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	img.FilePath = r.FormValue("filename")
+	img.Description = r.FormValue("description")
+	img.ShutterSpeed = r.FormValue("shutterspeed")
+	img.ISO = r.FormValue("iso")
+	img.Aperture = r.FormValue("aperture")
+	img.Location = r.FormValue("location")
+
+	outputDir := filepath.Join("..", "images")
+	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
+		err = os.MkdirAll(outputDir, os.ModePerm)
+		if err != nil {
+			log.Println("failed to create images directory: ", err.Error())
+			http.Error(w, "Failed to create images directory", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	image, _, err := image.Decode(file)
+	if err != nil {
+		log.Println("failde to decode image when saving an image: ", err.Error())
+		http.Error(w, "failed to decode image", http.StatusInternalServerError)
+		return
+	}
+
+	base := img.FilePath
+	if base == "" {
+		base = handler.Filename
+	}
+	base = strings.TrimSuffix(base, filepath.Ext(base))
+	newFileName := base + ".webp"
+	outputPath := filepath.Join(outputDir, newFileName)
+
+	outFile, err := os.Create(outputPath)
+	if err != nil {
+		log.Println("failed to create output file path: ", err.Error())
+		http.Error(w, "failed to create image output path", http.StatusInternalServerError)
+		return
+	}
+	defer outFile.Close()
+
+	img.FilePath = outputPath
+
+	options := &webp.Options{Quality: 80}
+	if err := webp.Encode(outFile, image, options); err != nil {
+		log.Println("failed to encode image into webp: ", err.Error())
+		http.Error(w, "failed to encode image into webp", http.StatusInternalServerError)
+		return
+	}
+
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		log.Println("failed to get cookie from request: ", err.Error())
+		http.Error(w, "Can't get cookie for verification", http.StatusBadRequest)
+		return
+	}
+	claims, err := auth.VerifyJWT(cookie.Value)
+	if err != nil {
+		log.Println("unauthorized user tried to get add image or failed to verify: ", err.Error())
+		http.Error(w, "unauthorized user or failed token verification", http.StatusBadRequest)
+		return
+	}
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		log.Println("failed to get sub from claims")
+		http.Error(w, "failed to get sub from cookie claims", http.StatusInternalServerError)
+		return
+	}
+	auth, ok := claims["auth"].(bool)
+	if !ok || !auth {
+		log.Println("fialed to get auth from claims")
+		http.Error(w, "failed to auth user", http.StatusUnauthorized)
+		return
+	}
+
+	conn := db.ConnectDB()
+	defer conn.Close()
+
+	err = db.AddImageMeta(conn, &img, sub)
+	if err != nil {
+		log.Println("failed to add the image entry to the database: ", err.Error())
+		http.Error(w, "failed to add image entry to the database: ", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Image sucessfully uploaded and converted: ", outputPath)
+
+	w.WriteHeader(http.StatusOK)
 }
