@@ -172,3 +172,108 @@ func NewImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
+	var img models.ImageMeta
+	err := r.ParseMultipartForm(20 << 20)
+	if err != nil {
+		log.Println("failed to parse form data: ", err.Error())
+		http.Error(w, "Error parsing the form", http.StatusBadRequest)
+		return
+	}
+
+	img.FilePath = r.FormValue("filename")
+	img.Description = r.FormValue("description")
+	img.ShutterSpeed = r.FormValue("shutterspeed")
+	img.ISO = r.FormValue("iso")
+	img.Aperture = r.FormValue("aperture")
+	img.Location = r.FormValue("location")
+
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		log.Println("failed to get cookie from request: ", err.Error())
+		http.Error(w, "Can't get cookie for verification", http.StatusBadRequest)
+		return
+	}
+	claims, err := auth.VerifyJWT(cookie.Value)
+	if err != nil {
+		log.Println("unauthorized user tried to get add image or failed to verify: ", err.Error())
+		http.Error(w, "unauthorized user or failed token verification", http.StatusBadRequest)
+		return
+	}
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		log.Println("failed to get sub from claims")
+		http.Error(w, "failed to get sub from cookie claims", http.StatusInternalServerError)
+		return
+	}
+	auth, ok := claims["auth"].(bool)
+	if !ok || !auth {
+		log.Println("fialed to get auth from claims")
+		http.Error(w, "failed to auth user", http.StatusUnauthorized)
+		return
+	}
+
+	conn := db.ConnectDB()
+	defer conn.Close()
+
+	err = db.SetImageMeta(conn, &img, sub)
+	if err != nil {
+		log.Println("failed to update image entry to the database:", err.Error())
+		http.Error(w, "failed to add image entry to the database: ", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Image sucessfully updated image entry")
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func DeleteImageHandler(w http.ResponseWriter, r *http.Request) {
+	var image_data models.SingleImageData
+	err := json.NewDecoder(r.Body).Decode(&image_data)
+	if err != nil {
+		log.Println("failed to decode the json data for single image data: ", err.Error())
+		http.Error(w, "Invalid Request payload", http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		log.Println("failed to get cookie from request: ", err.Error())
+		http.Error(w, "Can't get cookie for verification", http.StatusBadRequest)
+		return
+	}
+	claims, err := auth.VerifyJWT(cookie.Value)
+	if err != nil {
+		log.Println("unauthorized user tried to get add image or failed to verify: ", err.Error())
+		http.Error(w, "unauthorized user or failed token verification", http.StatusBadRequest)
+		return
+	}
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		log.Println("failed to get sub from claims")
+		http.Error(w, "failed to get sub from cookie claims", http.StatusInternalServerError)
+		return
+	}
+	auth, ok := claims["auth"].(bool)
+	if !ok || !auth {
+		log.Println("fialed to get auth from claims")
+		http.Error(w, "failed to auth user", http.StatusUnauthorized)
+		return
+	}
+
+	conn := db.ConnectDB()
+	defer conn.Close()
+
+	err = db.DeleteImageMeta(conn, image_data.FilePath, sub)
+	if err != nil {
+		log.Println("failed to delete the image entry from the database: ", err.Error())
+		http.Error(w, "failed to delete the image entry", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Image sucessfully deleted")
+
+	w.WriteHeader(http.StatusOK)
+}
