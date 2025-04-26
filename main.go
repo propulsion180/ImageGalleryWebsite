@@ -238,7 +238,7 @@ func containsCookie(db *sql.DB, sessionToken string) bool {
 func checkUser(db *sql.DB, username string, password string) bool {
 	querySQL := `SELECT username, password FROM users WHERE username = ? AND password = ?`
 	row := db.QueryRow(querySQL, username, password)
-	var user User
+	var user Usergit commit -m "reversing changes so that I can do them on the correct branch
 	err := row.Scan(&user.Username, &user.Password)
 	if err != nil {
 		fmt.Println(err)
