@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"errors"
+	"gallery-server/db"
 	"gallery-server/models"
 	"log"
 	"os"
@@ -103,19 +105,13 @@ func DeleteToken(db *sql.DB, username string) error {
 
 //user functions
 
-func AddUser(db *sql.DB, user models.User, adder string) (bool, error) {
-	adminAdder, err := IsAdmin(db, adder)
-	if err != nil {
-		log.Println("failed to check admin privileges when adding a user")
-		return false, err
-	}
-	if !adminAdder {
-		log.Println("unpriviledged user " + adder + "tried to add a new user")
+func AddUser(db *sql.DB, *user models.User) (bool, error) {
+	if !UserCheck(user) {
+		log.Println("fails users data checks")
 		return false, nil
 	}
-
 	statement := `INSERT INTO users (username, password, admin) VALUES (?, ?, ?)`
-	_, err = db.Exec(statement, user.Username, user.Password, user.Admin)
+	_, err := db.Exec(statement, user.Username, user.Password, user.Admin)
 	if err != nil {
 		log.Println("Failed to add user here is the error: ", err.Error())
 		return false, err
@@ -172,9 +168,15 @@ func GetUser(db *sql.DB, uname string, pword string) (*models.User, error) {
 
 // AddImageMeta adds a new image metadata entry to the database
 func AddImageMeta(db *sql.DB, img *models.ImageMeta, adder string) error {
+
+	if !CameraCheck(img) {
+		log.Println("image data fails checks")
+		return errors.New("image data fails checks")
+	}
+
 	ad, err := IsAdmin(db, adder)
 	if err != nil {
-		log.Fatal("something went wrong when checking admin priveleges when adding image:", err.Error())
+		log.Println("something went wrong when checking admin priveleges when adding image:", err.Error())
 		return err
 	}
 	if !ad {
@@ -211,6 +213,10 @@ func DeleteImageMeta(db *sql.DB, filePath string, deleter string) error {
 }
 
 func SetImageMeta(db *sql.DB, img *models.ImageMeta, setter string) error {
+	if !CameraCheck(img) {
+		log.Println("image data fails checks")
+		return errors.New("image data fails checks")
+	}
 	ad, err := IsAdmin(db, setter)
 	if err != nil {
 		log.Println("failed to check admin when setting image: ", err.Error())
