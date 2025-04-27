@@ -3,6 +3,7 @@ package db
 import (
 	"gallery-server/models"
 	"regexp"
+	"unicode"
 )
 
 func DescriptionCheck(desc string) bool {
@@ -82,18 +83,31 @@ func PasswordCheck(pw string) bool {
 	return false
 }
 
-
 func CameraCheck(img *models.ImageMeta) bool {
-	if !ApertureCheck(img.Aperture) return false
-	if !ShutterspeedCheck(img.ShutterSpeed) return false
-	if !DescriptionCheck(img.Description) return false
-	if !IsoCheck(img.ISO) return false
-	if !LocationCheck(img.Location) return false
+	if !ApertureCheck(img.Aperture) {
+		return false
+	}
+	if !ShutterspeedCheck(img.ShutterSpeed) {
+		return false
+	}
+	if !DescriptionCheck(img.Description) {
+		return false
+	}
+	if !IsoCheck(img.ISO) {
+		return false
+	}
+	if !LocationCheck(img.Location) {
+		return false
+	}
 	return true
 }
 
 func UserCheck(usr *models.User) bool {
-	if !UserCheck(usr.Username) return false
-	if !PasswordCheck(usr.Password) return false
+	if !UnameCheck(usr.Username) {
+		return false
+	}
+	if !PasswordCheck(usr.Password) {
+		return false
+	}
 	return true
 }

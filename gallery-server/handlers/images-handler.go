@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"gallery-server/auth"
 	"gallery-server/db"
 	"gallery-server/models"
@@ -19,6 +20,7 @@ import (
 )
 
 func AllImageHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("allimages requested")
 	conn := db.ConnectDB()
 	defer conn.Close()
 	images, err := db.GetAllImageMeta(conn)

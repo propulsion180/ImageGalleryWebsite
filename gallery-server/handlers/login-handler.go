@@ -22,7 +22,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	conn := db.ConnectDB()
 	defer conn.Close()
 
-	passCorrect, err := db.VerifyPassword(conn, login_data.Username, login_data.Password)
+	_, err = db.VerifyPassword(conn, login_data.Username, login_data.Password)
 	user, err := db.GetUser(conn, login_data.Username, login_data.Password)
 
 	if err != nil {

@@ -20,7 +20,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	conn := db.ConnectDB()
 	defer conn.Close()
 
-	worked, err := db.AddUser(conn, models.User{Username: signup_data.Username, Password: signup_data.Password, Admin: false})
+	worked, err := db.AddUser(conn, &models.User{Username: signup_data.Username, Password: signup_data.Password, Admin: false})
 
 	if !worked {
 		log.Println("failed to add user")
