@@ -1,13 +1,16 @@
-import React, { useEffect, useState, useNavigate, useLocation } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import ReactDOM from "react-dom";
-import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
+import {useNavigate, Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import Main from "./Main";
 import Single from "./Single";
+import Login from "./Login";
+import Signup from "./Signup";
+import Admin from "./Admin";
 
 export type ImageData = {
   FilePath: string;
-  De;
-  scription: string;
+  Description: string;
   ISO: string;
   ShutterSpeed: string;
   Aperture: string;
@@ -16,11 +19,9 @@ export type ImageData = {
 
 const App: React.FC = () => {
   console.log("starting");
-  const navigate = useNavigate();
-  const location = useLocation();
   const [images, setImages] = useState<Map<string, ImageData>>(new Map());
-  const [user, setUser] = useState<string>("");
-  const [admin, setAdmin] = useState<Boolean>(false);
+  const [user, setUser] = useState<string>("bruh");
+  const [admin, setAdmin] = useState<boolean>(false);
   useEffect(() => {
     console.log("querying");
     fetch("http://" + host + "/all")
@@ -42,17 +43,24 @@ const App: React.FC = () => {
     console.log("queried");
   }, []);
 
+  
+
   const host = window.location.host;
+
+
 
   return (
     <div>
       <Router>
         <Routes>
-          <Route path="/" element={<Main images={images} />} />
+          <Route path="/" element={<Main user={user} images={images}/>} />
           <Route
             path="/single"
             element={<Single images={images} user={user} />}
           />
+          <Route path="/login" element={<Login setUser={setUser} />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/admin" element={<Admin admin={admin} images={images}/>} />
         </Routes>
       </Router>
     </div>

@@ -1,5 +1,5 @@
 import React, { useLocation, useNavigate } from "react";
-import { userParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ImageData } from "./App";
 
 interface MainProps {
@@ -8,7 +8,7 @@ interface MainProps {
 }
 
 export default function Single({ images, user }: MainProps) {
-  const { fp } = userParams();
+  const { fp } = useParams();
 
   if (fp == "") {
     const navigate = useNavigate();
