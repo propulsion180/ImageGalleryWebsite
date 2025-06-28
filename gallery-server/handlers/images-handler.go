@@ -166,7 +166,7 @@ func NewImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	conn := db.ConnectDB()
 	defer conn.Close()
-
+	fmt.Println(img)
 	err = db.AddImageMeta(conn, &img, sub)
 	if err != nil {
 		log.Println("failed to add the image entry to the database: ", err.Error())

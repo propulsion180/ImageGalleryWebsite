@@ -18,6 +18,7 @@ func main() {
 	http.HandleFunc("/delimage", handlers.DeleteImageHandler)
 	http.HandleFunc("/setimage", handlers.UpdateImageHandler)
 	http.HandleFunc("/login", handlers.LoginHandler)
+	http.HandleFunc("/tknlgn", handlers.CookieLoginHandler)
 	http.HandleFunc("/signup", handlers.SignUpHandler)
 	http.HandleFunc("/logout", handlers.LogoutHandler)
 	fs := http.FileServer(http.Dir("public"))

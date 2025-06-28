@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"gallery-server/models"
 	"regexp"
 	"unicode"
@@ -85,15 +86,19 @@ func PasswordCheck(pw string) bool {
 
 func CameraCheck(img *models.ImageMeta) bool {
 	if !ApertureCheck(img.Aperture) {
+		fmt.Println("aperture fail")
 		return false
 	}
 	if !ShutterspeedCheck(img.ShutterSpeed) {
+		fmt.Println("ss fail")
 		return false
 	}
 	if !DescriptionCheck(img.Description) {
+		fmt.Println("desc failed")
 		return false
 	}
 	if !IsoCheck(img.ISO) {
+		fmt.Println("iso fail")
 		return false
 	}
 	if !LocationCheck(img.Location) {

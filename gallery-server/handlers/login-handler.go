@@ -72,3 +72,39 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func CookieLoginHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		log.Println("failed to get cookie from request: ", err.Error())
+		http.Error(w, "Can't get cookie for verification", http.StatusUnauthorized)
+		return
+	}
+	claims, err := auth.VerifyJWT(cookie.Value)
+	if err != nil {
+		log.Println("unauthorized user tried to get add image or failed to verify: ", err.Error())
+		http.Error(w, "unauthorized user or failed token verification", http.StatusUnauthorized)
+		return
+	}
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		log.Println("failed to get sub from claims")
+		http.Error(w, "failed to get sub from cookie claims", http.StatusInternalServerError)
+		return
+	}
+	auth, ok := claims["admin"].(bool)
+	if !ok || !auth {
+		log.Println("fialed to get auth from claims")
+		http.Error(w, "failed to auth user", http.StatusUnauthorized)
+		return
+	}
+	response := models.LoginResponse{
+		Message:  "Here are the credentials",
+		Username: sub,
+		Admin:    auth,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+
+}
