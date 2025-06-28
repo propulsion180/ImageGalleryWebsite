@@ -1,13 +1,10 @@
-import React from 'react'
+import React from "react";
 import { ImageData } from "./App";
 
-
 interface DescriptionProps {
-    images: Map<string, ImageData>;
+  image: ImageData;
 }
 
-export default function Description({ images }: DescriptionProps) {
-  return (
-    <div>Size of images is {images.size}</div>
-  )
+export default function Description({ image }: DescriptionProps) {
+  return <p>Filepath: {image.filepath}</p>;
 }
