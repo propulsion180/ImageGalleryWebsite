@@ -2,7 +2,7 @@ package models
 
 type ImageMeta struct {
 	FilePath     string `json:"filepath"`
-	Description  string `json:"descripiton"`
+	Description  string `json:"description"`
 	ISO          string `json:"iso"`
 	ShutterSpeed string `json:"shutterspeed"`
 	Aperture     string `json:"aperture"`

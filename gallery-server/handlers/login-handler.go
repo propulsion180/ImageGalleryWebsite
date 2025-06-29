@@ -93,7 +93,7 @@ func CookieLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	auth, ok := claims["admin"].(bool)
-	if !ok || !auth {
+	if !ok {
 		log.Println("fialed to get auth from claims")
 		http.Error(w, "failed to auth user", http.StatusUnauthorized)
 		return
