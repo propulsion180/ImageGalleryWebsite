@@ -60,6 +60,7 @@ export default function Header({ user, admin, logout }: HeaderProps) {
           </a>
         )}
       </div>
+      <hr className="hr-solid" />
     </div>
   );
 }

@@ -76,3 +76,10 @@ html {
         ); /* Back to original color */
     }
 }
+
+.hr-solid {
+    bottom-top: none;
+    border-bottom: 1px solid var(--srcery-palette-primary-black);
+    margin-bottom: 1rem;
+    width: 100%;
+}
