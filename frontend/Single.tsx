@@ -1,23 +1,19 @@
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ImageData } from "./App";
+import Description from "./Description";
 
-interface MainProps {
-  images: Map<string, ImageData>;
-  user: String;
-}
-
-export default function Single({ images, user }: MainProps) {
-  const { filepath } = useParams();
-  console.log(filepath);
-  if (filepath == "") {
-    const navigate = useNavigate();
-    navigate("/");
+export default function Single() {
+  const location = useLocation();
+  const img: ImageData | undefined = location.state?.img;
+  if (!img) {
+    return <div className="red">Image Not Found</div>;
   }
 
   return (
-    <div>
-      <img src={"/" + filepath} />
+    <div className="single-container">
+      <img src={"/" + img.filepath} />
+      <Description image={img} />
     </div>
   );
 }

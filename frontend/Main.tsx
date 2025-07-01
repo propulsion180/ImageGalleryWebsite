@@ -18,7 +18,7 @@ export default function Main({ user, images }: MainProps) {
         <div className="allimage-item">
           <a
             onClick={() => {
-              navigate("/single/" + image.filepath);
+              navigate("/single", { state: { img: image } });
             }}
           >
             <img src={"/" + image.filepath} alt={image.description} />
