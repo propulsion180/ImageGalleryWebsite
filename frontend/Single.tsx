@@ -8,16 +8,16 @@ interface MainProps {
 }
 
 export default function Single({ images, user }: MainProps) {
-  const { fp } = useParams();
-
-  if (fp == "") {
+  const { filepath } = useParams();
+  console.log(filepath);
+  if (filepath == "") {
     const navigate = useNavigate();
     navigate("/");
   }
 
   return (
     <div>
-      <img src={"/" + fp} />
+      <img src={"/" + filepath} />
     </div>
   );
 }

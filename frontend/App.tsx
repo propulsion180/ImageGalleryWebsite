@@ -100,7 +100,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Main user={user} images={images} />} />
           <Route
-            path="/single/"
+            path="/single/:filepath"
             element={<Single images={images} user={user} />}
           />
           <Route path="/login" element={<Login setUser={setUser} />} />

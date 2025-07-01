@@ -13,9 +13,9 @@ export default function Main({ user, images }: MainProps) {
   console.log(images);
 
   return (
-    <div>
+    <div className="allimage-grid">
       {Array.from(images).map(([fp, image]) => (
-        <div>
+        <div className="allimage-item">
           <a
             onClick={() => {
               navigate("/single/" + image.filepath);

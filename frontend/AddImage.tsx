@@ -105,14 +105,15 @@ export default function AddImage() {
   };
 
   return (
-    <div>
+    <div className="form-container">
       <h2>Add Image</h2>
-      {error && <div>{error}</div>}
-      {successMessage && <div>{successMessage}</div>}
+      {error && <div className="red">{error}</div>}
+      {successMessage && <div className="green">{successMessage}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Description:</label>
           <input
+            className="form-input"
             type="text"
             name="description"
             value={formData.description}
@@ -125,6 +126,7 @@ export default function AddImage() {
         <div>
           <label>Location:</label>
           <input
+            className="form-input"
             type="text"
             name="location"
             value={formData.location}
@@ -137,6 +139,7 @@ export default function AddImage() {
         <div>
           <label>ISO:</label>
           <input
+            className="form-input"
             type="text"
             name="iso"
             value={formData.iso}
@@ -149,6 +152,7 @@ export default function AddImage() {
         <div>
           <label>Shutter Speed:</label>
           <input
+            className="form-input"
             type="text"
             name="shutterSpeed"
             value={formData.shutterSpeed}
@@ -161,6 +165,7 @@ export default function AddImage() {
         <div>
           <label>Aperture:</label>
           <input
+            className="form-input"
             type="text"
             name="aperture"
             value={formData.aperture}
@@ -173,6 +178,7 @@ export default function AddImage() {
         <div>
           <label>Image File:</label>
           <input
+            className="form-input"
             type="file"
             name="file"
             onChange={handleFileChange}

@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
-    setUser: (value: string) => void;
+  setUser: (value: string) => void;
 }
 
-export default function Login({setUser}: LoginProps) {
+export default function Login({ setUser }: LoginProps) {
   // States to hold form input values
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // Handle form submission
@@ -24,10 +24,10 @@ export default function Login({setUser}: LoginProps) {
 
     try {
       // Send POST request to the server
-      const response = await fetch('http://localhost:8080/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8080/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(loginData),
       });
@@ -47,20 +47,20 @@ export default function Login({setUser}: LoginProps) {
       // Optionally, you can store the token or handle redirecting:
       // localStorage.setItem('auth_token', data.auth_token);
       // window.location.href = '/dashboard'; // Redirect to a protected page
-
     } catch (err) {
-      setError('An error occurred while trying to log in.');
-      console.error('Error:', err);
+      setError("An error occurred while trying to log in.");
+      console.error("Error:", err);
     }
   };
 
   return (
-    <div>
+    <div className="form-container">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username:</label>
           <input
+            className="form-input"
             type="text"
             id="username"
             value={username}
@@ -71,6 +71,7 @@ export default function Login({setUser}: LoginProps) {
         <div>
           <label htmlFor="password">Password:</label>
           <input
+            className="form-input"
             type="password"
             id="password"
             value={password}
@@ -78,10 +79,9 @@ export default function Login({setUser}: LoginProps) {
             required
           />
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
         <button type="submit">Login</button>
       </form>
-      <button onClick={() => {navigate('/')}}>Home</button>
     </div>
   );
 }

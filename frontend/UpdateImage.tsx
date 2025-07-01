@@ -79,7 +79,7 @@ export default function UpdateImage({ image }: UpdateImageProps) {
   }, [image]);
 
   return (
-    <div>
+    <div className="form-container">
       <h2>Update Image</h2>
       {error && <div>{error}</div>}
       {successMessage && <div>{successMessage}</div>}
@@ -87,6 +87,7 @@ export default function UpdateImage({ image }: UpdateImageProps) {
         <div>
           <label>Description:</label>
           <input
+            className="form-input"
             type="text"
             name="description"
             value={desc}
@@ -100,6 +101,7 @@ export default function UpdateImage({ image }: UpdateImageProps) {
         <div>
           <label>Location:</label>
           <input
+            className="form-input"
             type="text"
             name="location"
             value={loc}
@@ -113,6 +115,7 @@ export default function UpdateImage({ image }: UpdateImageProps) {
         <div>
           <label>ISO:</label>
           <input
+            className="form-input"
             type="text"
             name="iso"
             value={iso}
@@ -126,6 +129,7 @@ export default function UpdateImage({ image }: UpdateImageProps) {
         <div>
           <label>Shutter Speed:</label>
           <input
+            className="form-input"
             type="text"
             name="shutterSpeed"
             value={ss}
@@ -139,6 +143,7 @@ export default function UpdateImage({ image }: UpdateImageProps) {
         <div>
           <label>Aperture:</label>
           <input
+            className="form-input"
             type="text"
             name="aperture"
             value={apt}
