@@ -1,0 +1,5 @@
+packages:
+  - 'imagegallerywebsite'
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild

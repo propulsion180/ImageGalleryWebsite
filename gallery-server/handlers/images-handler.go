@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"gallery-server/auth"
 	"gallery-server/db"
 	"gallery-server/models"
@@ -19,6 +20,7 @@ import (
 )
 
 func AllImageHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("allimages requested")
 	conn := db.ConnectDB()
 	defer conn.Close()
 	images, err := db.GetAllImageMeta(conn)
@@ -69,14 +71,19 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 func NewImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	var img models.ImageMeta
-	err := r.ParseMultipartForm(20 << 20)
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		log.Println("failed to parse form data: ", err.Error())
 		http.Error(w, "Error parsing the form", http.StatusBadRequest)
 		return
 	}
 
-	file, handler, err := r.FormFile("image")
+	img.Description = r.FormValue("description")
+	img.ShutterSpeed = r.FormValue("shutterspeed")
+	img.ISO = r.FormValue("iso")
+	img.Aperture = r.FormValue("aperture")
+	img.Location = r.FormValue("location")
+	file, handler, err := r.FormFile("file")
 	if err != nil {
 		log.Println("failed to retrieive the file: ", err.Error())
 		http.Error(w, "Error retrieving the file", http.StatusInternalServerError)
@@ -84,14 +91,7 @@ func NewImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	img.FilePath = r.FormValue("filename")
-	img.Description = r.FormValue("description")
-	img.ShutterSpeed = r.FormValue("shutterspeed")
-	img.ISO = r.FormValue("iso")
-	img.Aperture = r.FormValue("aperture")
-	img.Location = r.FormValue("location")
-
-	outputDir := filepath.Join("..", "images")
+	outputDir := "images"
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		err = os.MkdirAll(outputDir, os.ModePerm)
 		if err != nil {
@@ -151,16 +151,22 @@ func NewImageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get sub from cookie claims", http.StatusInternalServerError)
 		return
 	}
-	auth, ok := claims["auth"].(bool)
-	if !ok || !auth {
+	auth, ok := claims["admin"].(bool)
+	if !ok {
 		log.Println("fialed to get auth from claims")
 		http.Error(w, "failed to auth user", http.StatusUnauthorized)
 		return
 	}
 
+	if !auth {
+		log.Println("not auth")
+		http.Error(w, "user not auth", http.StatusUnauthorized)
+		return
+	}
+
 	conn := db.ConnectDB()
 	defer conn.Close()
-
+	fmt.Println(img)
 	err = db.AddImageMeta(conn, &img, sub)
 	if err != nil {
 		log.Println("failed to add the image entry to the database: ", err.Error())
@@ -182,7 +188,7 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	img.FilePath = r.FormValue("filename")
+	img.FilePath = r.FormValue("filepath")
 	img.Description = r.FormValue("description")
 	img.ShutterSpeed = r.FormValue("shutterspeed")
 	img.ISO = r.FormValue("iso")
@@ -207,7 +213,7 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get sub from cookie claims", http.StatusInternalServerError)
 		return
 	}
-	auth, ok := claims["auth"].(bool)
+	auth, ok := claims["admin"].(bool)
 	if !ok || !auth {
 		log.Println("fialed to get auth from claims")
 		http.Error(w, "failed to auth user", http.StatusUnauthorized)
@@ -232,6 +238,7 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 func DeleteImageHandler(w http.ResponseWriter, r *http.Request) {
 	var image_data models.SingleImageData
 	err := json.NewDecoder(r.Body).Decode(&image_data)
+	fmt.Println(image_data.FilePath)
 	if err != nil {
 		log.Println("failed to decode the json data for single image data: ", err.Error())
 		http.Error(w, "Invalid Request payload", http.StatusBadRequest)
@@ -256,7 +263,7 @@ func DeleteImageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get sub from cookie claims", http.StatusInternalServerError)
 		return
 	}
-	auth, ok := claims["auth"].(bool)
+	auth, ok := claims["admin"].(bool)
 	if !ok || !auth {
 		log.Println("fialed to get auth from claims")
 		http.Error(w, "failed to auth user", http.StatusUnauthorized)

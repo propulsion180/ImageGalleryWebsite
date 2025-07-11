@@ -3,10 +3,11 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"gallery-server/db"
 	"gallery-server/models"
 	"log"
 	"os"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DBName string
@@ -29,7 +30,7 @@ func InitDB(dbName string) bool {
 			iso TEXT,
 			shutterspeed TEXT,
 			aperture TEXT,
-			location TEXT,
+			location TEXT
 		);`
 
 		_, err = db.Exec(createTableSQL)
@@ -42,7 +43,7 @@ func InitDB(dbName string) bool {
 			username TEXT PRIMARY KEY,
 			password TEXT NOT NULL,
 			admin BOOLEAN NOT NULL,
-			token TEXT NOT NULL DEFAULT 
+			token TEXT NOT NULL DEFAULT ''
 		);`
 
 		_, err = db.Exec(createTableSQL)
@@ -105,7 +106,7 @@ func DeleteToken(db *sql.DB, username string) error {
 
 //user functions
 
-func AddUser(db *sql.DB, *user models.User) (bool, error) {
+func AddUser(db *sql.DB, user *models.User) (bool, error) {
 	if !UserCheck(user) {
 		log.Println("fails users data checks")
 		return false, nil
