@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
   setUser: (value: string) => void;
+  setAdmin: (value: boolean) => void;
 }
 
-export default function Login({ setUser }: LoginProps) {
+export default function Login({ setUser, setAdmin }: LoginProps) {
   // States to hold form input values
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -43,7 +44,7 @@ export default function Login({ setUser }: LoginProps) {
       const data = await response.json();
       alert(`Welcome, ${data.username}!`); // Or redirect user after successful login
       setUser(data.username);
-
+      setAdmin(data.admin);
       // Optionally, you can store the token or handle redirecting:
       // localStorage.setItem('auth_token', data.auth_token);
       // window.location.href = '/dashboard'; // Redirect to a protected page
@@ -80,7 +81,9 @@ export default function Login({ setUser }: LoginProps) {
           />
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit">Login</button>
+        <button type="submit" className="small-button">
+          Login
+        </button>
       </form>
     </div>
   );

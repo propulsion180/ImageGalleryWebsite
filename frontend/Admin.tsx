@@ -21,9 +21,31 @@ export default function Admin({ admin, images }: AdminProps) {
     shutterspeed: "",
     aperture: "",
   });
-  // if(!admin){
-  //   navigate('/');
-  // }
+  if (!admin) {
+    navigate("/");
+  }
+
+  const deleteImage = async (filepath: string) => {
+    try {
+      const response = await fetch("http://localhost:8080/delimage", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ filepath }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete image");
+      }
+      // window.location.href = "/";
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting image: ", error);
+      alert("error deleting image");
+    }
+  };
 
   return (
     <>
@@ -43,6 +65,13 @@ export default function Admin({ admin, images }: AdminProps) {
                 }}
               >
                 Update
+              </button>
+              <button
+                onClick={() => {
+                  deleteImage(val.filepath);
+                }}
+              >
+                Delete
               </button>
             </div>
           ))}

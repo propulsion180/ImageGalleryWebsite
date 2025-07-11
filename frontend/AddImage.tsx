@@ -94,6 +94,8 @@ export default function AddImage() {
           aperture: "",
           file: null,
         });
+        // window.location.href = "/";
+        window.location.reload();
       } else {
         setError("Failed to add image. Please try again.");
       }

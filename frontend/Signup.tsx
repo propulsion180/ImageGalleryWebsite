@@ -73,7 +73,9 @@ export default function Signup() {
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-        <button type="submit">Sign Up</button>
+        <button type="submit" className="small-button">
+          Sign Up
+        </button>
       </form>
     </div>
   );

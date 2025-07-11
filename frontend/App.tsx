@@ -99,11 +99,11 @@ const App: React.FC = () => {
         <Header user={user} admin={admin} logout={logout} />
         <Routes>
           <Route path="/" element={<Main user={user} images={images} />} />
+          <Route path="/single" element={<Single />} />
           <Route
-            path="/single"
-            element={<Single images={images} user={user} />}
+            path="/login"
+            element={<Login setUser={setUser} setAdmin={setAdmin} />}
           />
-          <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<Signup />} />
           <Route
             path="/admin"
