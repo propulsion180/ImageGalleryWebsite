@@ -49,49 +49,69 @@ export default function Admin({ admin, images }: AdminProps) {
 
   return (
     <>
-      <h1>The admin page</h1>
+      <div className="admin-buttons-area">
+        <a
+          className="nav-button"
+          onClick={() => {
+            setPage("add");
+          }}
+        >
+          Add an Image
+        </a>
+        <a
+          className="nav-button"
+          onClick={() => {
+            setPage("desc");
+          }}
+        >
+          Description
+        </a>
+      </div>
+
       {page == "add" && true && <AddImage />}
       {page == "up" && true && <UpdateImage image={img} />}
-      {true && (
-        <div>
-          {Array.from(images).map(([key, val]) => (
-            <div>
-              <Description image={val} />
-              <p>{val.description}</p>
-              <button
-                onClick={() => {
-                  setImg(val);
-                  setPage("up");
-                }}
-              >
-                Update
-              </button>
-              <button
-                onClick={() => {
-                  deleteImage(val.filepath);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={() => {
-              setPage("add");
-            }}
-          >
-            Add Page
-          </button>
 
-          <button
-            onClick={() => {
-              setPage("desc");
-            }}
-          >
-            Description Page
-          </button>
-        </div>
-      )}
+      <table className="description-table">
+        <thead>
+          <tr>
+            <th>Filepath:</th>
+            <th>Description</th>
+            <th>Location</th>
+            <th>Delete</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from(images).map(([key, value]) => (
+            <tr>
+              <td>{value.filepath}</td>
+              <td>{value.description}</td>
+              <td>{value.location}</td>
+              <td>
+                <a
+                  className="small-button"
+                  onClick={() => {
+                    deleteImage(value.filepath);
+                  }}
+                >
+                  Delete
+                </a>
+              </td>
+              <td>
+                <a
+                  className="small-button"
+                  onClick={() => {
+                    setImg(value);
+                    setPage("up");
+                  }}
+                >
+                  Update
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   );
 }

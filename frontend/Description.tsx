@@ -9,12 +9,12 @@ export default function Description({ image }: DescriptionProps) {
   return (
     <div>
       <table className="description-table">
-        <thead>
+        {/* <thead>
           <tr>
             <th>Property</th>
             <th>Value</th>
           </tr>
-        </thead>
+        </thead> */}
         <tbody>
           <tr>
             <td>Description</td>
@@ -26,11 +26,11 @@ export default function Description({ image }: DescriptionProps) {
           </tr>
           <tr>
             <td>Aperture</td>
-            <td>{image.aperture}</td>
+            <td>f/{image.aperture}</td>
           </tr>
           <tr>
             <td>Shutter Speed</td>
-            <td>{image.shutterspeed}</td>
+            <td>{image.shutterspeed}s</td>
           </tr>
           <tr>
             <td>ISO</td>

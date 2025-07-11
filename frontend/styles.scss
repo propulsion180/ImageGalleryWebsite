@@ -230,6 +230,7 @@ html {
 .description-table {
     width: 100%;
     border-collapse: collapse;
+    margin: 1em auto;
     color: var(--srcery-palette-primary-bright-white);
     border: 1px solid var(--srcery-palette-primary-bright-white);
     border-radius: 2px;
@@ -245,4 +246,15 @@ html {
 .description-table th {
     background-color: var(--srcery-palette-secondary-xgray2);
     font-weight: bold;
+}
+
+input button {
+    background-color: var(--srcery-palette-secondary-xgray1);
+    color: var(--srcery-palette-primary-bright-white);
+}
+
+.admin-buttons-area {
+    margin: 1rem auto;
+    align-items: center;
+    text-align: center;
 }

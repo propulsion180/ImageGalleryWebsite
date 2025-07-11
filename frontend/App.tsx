@@ -46,6 +46,8 @@ const App: React.FC = () => {
       if (!response.ok) {
         throw new Error("Failed to log out");
       }
+      setUser("");
+      setAdmin(false);
     } catch (error) {
       console.error("Logout failed:", error);
       // Optionally, handle any errors (e.g., show a message to the user)
