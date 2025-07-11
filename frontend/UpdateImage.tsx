@@ -13,9 +13,10 @@ interface ImageFormData {
 
 interface UpdateImageProps {
   image: ImageData;
+  host: string;
 }
 
-export default function UpdateImage({ image }: UpdateImageProps) {
+export default function UpdateImage({ image, host }: UpdateImageProps) {
   const location = useLocation();
   const navigate = useNavigate();
   // State for form fields
@@ -54,7 +55,7 @@ export default function UpdateImage({ image }: UpdateImageProps) {
     formDataToSend.append("filepath", image.filepath);
 
     try {
-      const response = await fetch(`http://localhost:8080/setimage`, {
+      const response = await fetch("http://" + host + "/setimage", {
         method: "PUT",
         body: formDataToSend,
       });

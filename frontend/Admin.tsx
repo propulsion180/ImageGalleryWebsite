@@ -8,9 +8,10 @@ import UpdateImage from "./UpdateImage";
 interface AdminProps {
   admin: boolean;
   images: Map<string, ImageData>;
+  host: string;
 }
 
-export default function Admin({ admin, images }: AdminProps) {
+export default function Admin({ admin, images, host }: AdminProps) {
   const navigate = useNavigate();
   const [page, setPage] = useState<string>("desc");
   const [img, setImg] = useState<ImageData>({
@@ -27,7 +28,7 @@ export default function Admin({ admin, images }: AdminProps) {
 
   const deleteImage = async (filepath: string) => {
     try {
-      const response = await fetch("http://localhost:8080/delimage", {
+      const response = await fetch("http://" + host + "/delimage", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -68,8 +69,8 @@ export default function Admin({ admin, images }: AdminProps) {
         </a>
       </div>
 
-      {page == "add" && true && <AddImage />}
-      {page == "up" && true && <UpdateImage image={img} />}
+      {page == "add" && true && <AddImage host={host} />}
+      {page == "up" && true && <UpdateImage image={img} host={host} />}
 
       <table className="description-table">
         <thead>

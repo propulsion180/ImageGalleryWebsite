@@ -39,9 +39,12 @@ html {
 
 .navButtonContainer {
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    gap: 4rem;
+    /* flex-direction: row; */
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 .nav-button {
@@ -49,12 +52,12 @@ html {
     border: 2px solid var(--srcery-palette-primary-black);
     box-shadow: 2px var(--srcery-palette-primary-black);
     text-align: center;
-    padding: 1rem 4rem;
+    flex-grow: 1;
+    padding: 1rem 2rem;
     margin: 1rem 1rem;
     cursor: pointer;
     text-decoration: none;
     transition: background-color 0.3s ease;
-    width: 8rem;
     font-size: 1rem;
     font-weight: 500;
     display: inline-block;
@@ -238,7 +241,7 @@ html {
 
 .description-table th,
 .description-table td {
-    padding: 10px;
+    padding: 0.2em;
     border: 1px solid var(--srcery-palette-primary-bright-white);
     text-align: center;
 }

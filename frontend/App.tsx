@@ -38,7 +38,7 @@ const App: React.FC = () => {
     try {
       console.log("logging out");
       // Send a request to the backend to log the user out
-      const response = await fetch("http://localhost:8080/logout", {
+      const response = await fetch("http://" + host + "/logout", {
         method: "POST", // or 'DELETE' depending on your backend's method
         credentials: "include", // Ensure cookies are sent with the request
       });
@@ -104,12 +104,14 @@ const App: React.FC = () => {
           <Route path="/single" element={<Single />} />
           <Route
             path="/login"
-            element={<Login setUser={setUser} setAdmin={setAdmin} />}
+            element={
+              <Login setUser={setUser} setAdmin={setAdmin} host={host} />
+            }
           />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/signup" element={<Signup host={host} />} />
           <Route
             path="/admin"
-            element={<Admin admin={admin} images={images} />}
+            element={<Admin admin={admin} images={images} host={host} />}
           />
         </Routes>
       </Router>

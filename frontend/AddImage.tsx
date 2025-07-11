@@ -10,7 +10,11 @@ interface ImageFormData {
   file: File | null;
 }
 
-export default function AddImage() {
+interface AdminProps {
+  host: string;
+}
+
+export default function AddImage({ host }: AdminProps) {
   // State to handle form data
   const [formData, setFormData] = useState<ImageFormData>({
     description: "",
@@ -78,7 +82,7 @@ export default function AddImage() {
     formDataToSend.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8080/addimage", {
+      const response = await fetch("http://" + host + "/addimage", {
         method: "POST",
         body: formDataToSend,
       });

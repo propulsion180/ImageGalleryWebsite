@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 interface LoginProps {
   setUser: (value: string) => void;
   setAdmin: (value: boolean) => void;
+  host: string;
 }
 
-export default function Login({ setUser, setAdmin }: LoginProps) {
+export default function Login({ setUser, setAdmin, host }: LoginProps) {
   // States to hold form input values
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +26,7 @@ export default function Login({ setUser, setAdmin }: LoginProps) {
 
     try {
       // Send POST request to the server
-      const response = await fetch("http://localhost:8080/login", {
+      const response = await fetch("http://" + host + "/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

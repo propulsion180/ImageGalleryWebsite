@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-
-export default function Signup() {
+interface SignupProps {
+  host: string;
+}
+export default function Signup({ host }: SignupProps) {
   // States to hold form input values
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +21,7 @@ export default function Signup() {
 
     try {
       // Send POST request to the server (Signup endpoint)
-      const response = await fetch("http://localhost:8080/signup", {
+      const response = await fetch("http://" + host + "/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

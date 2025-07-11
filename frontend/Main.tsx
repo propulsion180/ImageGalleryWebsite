@@ -16,13 +16,18 @@ export default function Main({ user, images }: MainProps) {
     <div className="allimage-grid">
       {Array.from(images).map(([fp, image]) => (
         <div className="allimage-item">
-          <a
-            onClick={() => {
-              navigate("/single", { state: { img: image } });
-            }}
-          >
+          {user != "" && (
+            <a
+              onClick={() => {
+                navigate("/single", { state: { img: image } });
+              }}
+            >
+              <img src={"/" + image.filepath} alt={image.description} />
+            </a>
+          )}
+          {user == "" && (
             <img src={"/" + image.filepath} alt={image.description} />
-          </a>
+          )}
         </div>
       ))}
     </div>
