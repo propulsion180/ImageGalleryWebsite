@@ -154,7 +154,7 @@ export default function UpdateImage({ image }: UpdateImageProps) {
           />
         </div>
 
-        <button type="submit" disabled={isSubmitting}>
+        <button type="submit" className="small-button" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Update Image"}
         </button>
       </form>

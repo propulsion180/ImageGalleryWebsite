@@ -189,7 +189,7 @@ export default function AddImage() {
           />
         </div>
 
-        <button type="submit" disabled={isSubmitting}>
+        <button type="submit" className="small-button" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Add Image"}
         </button>
       </form>
