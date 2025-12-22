@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"gallery-server/auth"
 	"gallery-server/models"
 	"log"
 	"os"
@@ -111,8 +112,14 @@ func AddUser(db *sql.DB, user *models.User) (bool, error) {
 		log.Println("fails users data checks")
 		return false, nil
 	}
+
+	hashed, err := auth.HashPassword(user.Password)
+	if err != nil {
+		return false, err
+	}
+
 	statement := `INSERT INTO users (username, password, admin) VALUES (?, ?, ?)`
-	_, err := db.Exec(statement, user.Username, user.Password, user.Admin)
+	_, err = db.Exec(statement, user.Username, hashed, user.Admin)
 	if err != nil {
 		log.Println("Failed to add user here is the error: ", err.Error())
 		return false, err
@@ -141,7 +148,7 @@ func VerifyPassword(db *sql.DB, username string, password string) (bool, error) 
 		log.Println("failed to get password of user to verify, here is the error: ", err.Error())
 		return false, err
 	}
-	return pword == password, nil
+	return auth.ValidateHash(password, pword), nil
 }
 
 func GetUser(db *sql.DB, uname string, pword string) (*models.User, error) {
