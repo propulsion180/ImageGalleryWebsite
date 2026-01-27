@@ -28,7 +28,7 @@ export default function Admin({ admin, images, host }: AdminProps) {
 
   const deleteImage = async (filepath: string) => {
     try {
-      const response = await fetch("http://" + host + "/delimage", {
+      const response = await fetch("https://" + host + "/delimage", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

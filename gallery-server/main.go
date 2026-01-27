@@ -1,9 +1,11 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"gallery-server/db"
 	"gallery-server/handlers"
+	"golang.org/x/crypto/acme/autocert"
 	"log"
 	"net/http"
 )
@@ -26,5 +28,20 @@ func main() {
 	fs2 := http.FileServer(http.Dir("images"))
 	http.Handle("/images/", http.StripPrefix("/images/", fs2))
 	fmt.Println("starting servers")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	acm := &autocert.Manager{
+		Cache:      autocert.DirCache("/var/www/.cache"),
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist("gallery.wmmp.xyz"),
+	}
+
+	server := &http.Server{
+		Addr:      ":443",
+		TLSConfig: &tls.Config{GetCertificate: acm.GetCertificate},
+		Handler:   http.DefaultServeMux,
+	}
+
+	go http.ListenAndServe(":80", m.HTTPHandler(nil))
+
+	log.Fatal(server.ListenAndServeTLS("", ""))
 }
