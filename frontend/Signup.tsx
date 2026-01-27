@@ -21,7 +21,7 @@ export default function Signup({ host }: SignupProps) {
 
     try {
       // Send POST request to the server (Signup endpoint)
-      const response = await fetch("http://" + host + "/signup", {
+      const response = await fetch("https://" + host + "/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

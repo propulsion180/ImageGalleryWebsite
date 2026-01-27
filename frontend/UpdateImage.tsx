@@ -55,7 +55,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
     formDataToSend.append("filepath", image.filepath);
 
     try {
-      const response = await fetch("http://" + host + "/setimage", {
+      const response = await fetch("https://" + host + "/setimage", {
         method: "PUT",
         body: formDataToSend,
       });

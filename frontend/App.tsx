@@ -38,7 +38,7 @@ const App: React.FC = () => {
     try {
       console.log("logging out");
       // Send a request to the backend to log the user out
-      const response = await fetch("http://" + host + "/logout", {
+      const response = await fetch("https://" + host + "/logout", {
         method: "POST", // or 'DELETE' depending on your backend's method
         credentials: "include", // Ensure cookies are sent with the request
       });
@@ -55,7 +55,7 @@ const App: React.FC = () => {
   };
   useEffect(() => {
     console.log("querying");
-    fetch("http://" + host + "/all")
+    fetch("https://" + host + "/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status ${response.status}`);
@@ -76,7 +76,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetch("http://" + host + "/tknlgn")
+    fetch("https://" + host + "/tknlgn")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status ${response.status}`);
