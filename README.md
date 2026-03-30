@@ -24,6 +24,27 @@ Returns the index.html when requested.
 
 Returns a list of all of the imagedata objects stored in the database.
 
+#### Returns
+
+```
+[
+    {
+        Filepath: string,
+        Description: string,
+        ISO: string,
+        ShutterSpeed: string,
+        Aperture: string,
+        Location: string
+    },
+    ...
+]
+```
+
+| Reason | Code |
+| ------ | ---- |
+| Failed to ge all images, or failed to marshall data to json | 500 |
+| Sucess | 200 |
+
 ### `POST /image`
 
 Returns the data of a single image based on the filepath given in the json body
@@ -33,6 +54,27 @@ Returns the data of a single image based on the filepath given in the json body
     Filepath: string 
 }
 ```
+
+#### Returns
+
+```
+{
+   Filepath: string,
+   Description: string,
+   ISO: string,
+   ShutterSpeed: string,
+   Aperture: string,
+   Location: string
+ 
+}
+```
+| Reason | Code |
+| ------ | ---- |
+| Failed to decode request body, failed to get cookie, failed to verify cookie | 400 |
+| Failed to marshall data to json | 500 |
+| Sucess | 200 |
+
+
 
 ### `POST /addimage`
 
