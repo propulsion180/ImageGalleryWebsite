@@ -39,7 +39,7 @@ const App: React.FC = () => {
       console.log("logging out");
       // Send a request to the backend to log the user out
       const response = await fetch("https://" + host + "/logout", {
-        method: "POST", // or 'DELETE' depending on your backend's method
+        method: "POST", 
         credentials: "include", // Ensure cookies are sent with the request
       });
 
@@ -50,7 +50,6 @@ const App: React.FC = () => {
       setAdmin(false);
     } catch (error) {
       console.error("Logout failed:", error);
-      // Optionally, handle any errors (e.g., show a message to the user)
     }
   };
   useEffect(() => {
