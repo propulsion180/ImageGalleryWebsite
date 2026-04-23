@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"gallery-server/db"
 	"gallery-server/handlers"
-	"golang.org/x/crypto/acme/autocert"
 	"log"
 	"net/http"
+
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {
@@ -41,7 +42,8 @@ func main() {
 		Handler:   http.DefaultServeMux,
 	}
 
-	go http.ListenAndServe(":80", m.HTTPHandler(nil))
+	go http.ListenAndServe(":80", acm.HTTPHandler(nil))
 
 	log.Fatal(server.ListenAndServeTLS("", ""))
+
 }

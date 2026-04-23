@@ -7,16 +7,19 @@ import (
 	"gallery-server/db"
 	"gallery-server/models"
 	"image"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/chai2010/webp"
-
 	_ "image/jpeg"
 	_ "image/png"
+
+	"github.com/chai2010/webp"
+	"github.com/disintegration/imaging"
+	"github.com/rwcarlsen/goexif/exif"
 )
 
 func AllImageHandler(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +71,19 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func applyOrientation(img image.Image, orientation int) image.Image {
+	switch orientation {
+	case 3:
+		return imaging.Rotate180(img)
+	case 6:
+		return imaging.Rotate270(img)
+	case 8:
+		return imaging.Rotate90(img)
+	default:
+		return img
+	}
+}
+
 func NewImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	var img models.ImageMeta
@@ -108,6 +124,28 @@ func NewImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	file.Seek(0, io.SeekStart)
+
+	x, err := exif.Decode(file)
+
+	if err != nil {
+		log.Println("failed to decode image exif data ", err.Error())
+		http.Error(w, "failed to decode image exif data", http.StatusInternalServerError)
+		return
+	}
+
+	orientation := 1
+
+	tag, err := x.Get(exif.Orientation)
+
+	if err != nil {
+		log.Println("failed to get exif orientation ", err.Error())
+		http.Error(w, "failed to get exif orientation", http.StatusInternalServerError)
+		return
+	}
+
+	orientation, _ = tag.Int(0)
+
 	base := img.FilePath
 	if base == "" {
 		base = handler.Filename
@@ -123,11 +161,12 @@ func NewImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer outFile.Close()
-
 	img.FilePath = outputPath
 
+	rImage := applyOrientation(image, orientation)
+
 	options := &webp.Options{Quality: 80}
-	if err := webp.Encode(outFile, image, options); err != nil {
+	if err := webp.Encode(outFile, rImage, options); err != nil {
 		log.Println("failed to encode image into webp: ", err.Error())
 		http.Error(w, "failed to encode image into webp", http.StatusInternalServerError)
 		return
