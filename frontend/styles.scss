@@ -25,7 +25,7 @@ html {
     padding: 1rem 1rem;
     background-color: var(--srcery-palette-secondary-xgray1);
     border: 1px solid var(--srcery-pallete-primary-black);
-    box-shadow: 4px var(--srcery-pallete-secondary-hard-black);
+    box-shadow: 4px 4px var(--srcery-pallete-secondary-hard-black);
 }
 
 .header {
@@ -50,7 +50,7 @@ html {
 .nav-button {
     background-color: var(--srcery-palette-secondary-xgray3);
     border: 2px solid var(--srcery-palette-primary-black);
-    box-shadow: 2px var(--srcery-palette-primary-black);
+    box-shadow: 4px 4px var(--srcery-palette-primary-black);
     text-align: center;
     flex-grow: 1;
     padding: 1rem 2rem;
@@ -98,7 +98,7 @@ html {
     color: var(--srcery-palette-primary-bright-white);
     background-color: var(--srcery-palette-secondary-xgray3);
     border: 2px solid var(--srcery-palette-primary-black);
-    box-shadow: 2px var(--srcery-palette-primary-black);
+    box-shadow: 2px 2px var(--srcery-palette-primary-black);
     text-align: center;
     padding: 0.5rem 0.5rem;
     margin: 1rem 1rem;
@@ -160,9 +160,8 @@ html {
 .form-input {
     background-color: var(--srcery-palette-secondary-xgray3);
     margin: 1ex 2ex;
-    box-shadow: none;
     border: 1px solid var(--srcery-palette-primary-black);
-    box-shadow: 1px var(--srcery-palette-secondary-xgray1);
+    box-shadow: 1px 1px var(--srcery-palette-secondary-xgray1);
     color: var(--srcery-palette-primary-bright-white);
 }
 

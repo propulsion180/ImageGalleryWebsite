@@ -5,13 +5,21 @@ import (
 	"fmt"
 	"gallery-server/db"
 	"gallery-server/handlers"
-	"golang.org/x/crypto/acme/autocert"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
+
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
+	slog.SetDefault(logger)
+
+	slog.Info("Started server!")
+
 	db.InitDB("images.db")
+	slog.Info("database initialized")
 
 	http.HandleFunc("/", handlers.RootHandler)
 	http.HandleFunc("/all", handlers.AllImageHandler)
@@ -38,10 +46,14 @@ func main() {
 	server := &http.Server{
 		Addr:      ":443",
 		TLSConfig: &tls.Config{GetCertificate: acm.GetCertificate},
-		Handler:   http.DefaultServeMux,
+		Handler:   handlers.LoggingMiddleware(http.DefaultServeMux),
 	}
 
-	go http.ListenAndServe(":80", m.HTTPHandler(nil))
+	go http.ListenAndServe(":80", acm.HTTPHandler(nil))
 
-	log.Fatal(server.ListenAndServeTLS("", ""))
+	if err := server.ListenAndServeTLS("", ""); err != nil {
+		slog.Error("Server Failed", "err", err)
+		os.Exit(1)
+	}
+
 }

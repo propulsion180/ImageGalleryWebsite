@@ -5,7 +5,7 @@ import (
 	"gallery-server/auth"
 	"gallery-server/db"
 	"gallery-server/models"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -14,10 +14,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var login_data models.LoginData
 	err := json.NewDecoder(r.Body).Decode(&login_data)
 	if err != nil {
-		log.Println("failed to decode json data for login: ", err.Error())
+		slog.Error("Failed to decode json data for login", "status", http.StatusBadRequest, "error", err.Error())
 		http.Error(w, "Invalid Request payload", http.StatusBadRequest)
 		return
 	}
+
+	slog.Info("User Login Attempt", "user", login_data.Username)
 
 	conn := db.ConnectDB()
 	defer conn.Close()
@@ -26,13 +28,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := db.GetUser(conn, login_data.Username, login_data.Password)
 
 	if err != nil {
-		log.Println("caught error from getting user: ", err.Error())
+		slog.Error("Caught error from getting user", "status", http.StatusInternalServerError, "error", err.Error())
 		http.Error(w, "Error while getting user", http.StatusInternalServerError)
 		return
 	}
 
 	if user == nil {
-		log.Println("invalid password sent by " + login_data.Username)
+		slog.Error("Invalid password sent", "user", login_data.Username, "status", http.StatusUnauthorized)
 		http.Error(w, "Incorrect password", http.StatusUnauthorized)
 		return
 	}
@@ -40,7 +42,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	tkn, err := auth.GenerateJWT(user.Username, user.Admin)
 
 	if err != nil {
-		log.Println("caught error from generate JWT: ", err.Error())
+		slog.Error("Caught error from generate JWT", "status", http.StatusInternalServerError, "error", err.Error())
 		http.Error(w, "Error while generating token", http.StatusInternalServerError)
 		return
 	}
@@ -48,7 +50,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	res := db.SetToken(conn, tkn, user)
 
 	if !res {
-		log.Println("failed to set token to user")
+		slog.Error("Failed to set token to user", "status", http.StatusInternalServerError)
 		http.Error(w, "failed to set user's token", http.StatusInternalServerError)
 		return
 	}
@@ -71,30 +73,34 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+	slog.Info("Login Successfull, response sent")
 }
 
 func CookieLoginHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("auth_token")
 	if err != nil {
-		log.Println("failed to get cookie from request: ", err.Error())
+		slog.Error("Failed to get cookie from request", "status", http.StatusUnauthorized, "error", err.Error())
 		http.Error(w, "Can't get cookie for verification", http.StatusUnauthorized)
 		return
 	}
+
+	slog.Info("Cookie Login occuring")
+
 	claims, err := auth.VerifyJWT(cookie.Value)
 	if err != nil {
-		log.Println("unauthorized user tried to get add image or failed to verify: ", err.Error())
+		slog.Error("Unauthorized user tried to get add image or failed to verify", "status", http.StatusUnauthorized, "error", err.Error())
 		http.Error(w, "unauthorized user or failed token verification", http.StatusUnauthorized)
 		return
 	}
 	sub, ok := claims["sub"].(string)
 	if !ok {
-		log.Println("failed to get sub from claims")
+		slog.Error("Failed to get sub from claims", "status", http.StatusInternalServerError)
 		http.Error(w, "failed to get sub from cookie claims", http.StatusInternalServerError)
 		return
 	}
 	auth, ok := claims["admin"].(bool)
 	if !ok {
-		log.Println("fialed to get auth from claims")
+		slog.Error("Failled to get auth from claims", "status", http.StatusUnauthorized)
 		http.Error(w, "failed to auth user", http.StatusUnauthorized)
 		return
 	}
@@ -107,4 +113,5 @@ func CookieLoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 
+	slog.Info("Cookie login correct", "user", response.Username)
 }

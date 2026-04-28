@@ -82,7 +82,7 @@ export default function AddImage({ host }: AdminProps) {
     formDataToSend.append("file", file);
 
     try {
-      const response = await fetch("http://" + host + "/addimage", {
+      const response = await fetch("https://" + host + "/addimage", {
         method: "POST",
         body: formDataToSend,
       });

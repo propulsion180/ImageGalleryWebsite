@@ -39,7 +39,7 @@ const App: React.FC = () => {
       console.log("logging out");
       // Send a request to the backend to log the user out
       const response = await fetch("https://" + host + "/logout", {
-        method: "POST", 
+        method: "POST",
         credentials: "include", // Ensure cookies are sent with the request
       });
 
