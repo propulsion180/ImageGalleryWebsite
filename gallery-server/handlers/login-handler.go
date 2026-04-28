@@ -34,7 +34,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user == nil {
-		slog.Error("Invalid password sent", "user", login_data.Username, "status", http.StatusUnauthorized, "error", err.Error())
+		slog.Error("Invalid password sent", "user", login_data.Username, "status", http.StatusUnauthorized)
 		http.Error(w, "Incorrect password", http.StatusUnauthorized)
 		return
 	}

@@ -133,7 +133,7 @@ func IsAdmin(db *sql.DB, unameOrToken string) (bool, error) {
 	var admn bool
 	err := row.Scan(&admn)
 	if err != nil {
-		slog.Error("Failed to scan row when checking admin", err.Error())
+		slog.Error("Failed to scan row when checking admin", "error", err.Error())
 		return false, err
 	}
 	if admn {
