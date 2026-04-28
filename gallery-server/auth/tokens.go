@@ -2,7 +2,7 @@ package auth
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -20,7 +20,7 @@ func GenerateJWT(username string, perms bool) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
-		log.Println("failed to create jwt token: ", err.Error())
+		slog.Error("Failed to create jwt token", "error", err.Error())
 		return "", err
 	}
 	return tokenString, nil
@@ -29,14 +29,14 @@ func GenerateJWT(username string, perms bool) (string, error) {
 func VerifyJWT(token string) (jwt.MapClaims, error) {
 	tokenParsed, err := jwt.Parse(token, func(tkn *jwt.Token) (interface{}, error) {
 		if _, ok := tkn.Method.(*jwt.SigningMethodHMAC); !ok {
-			log.Println("unexpected signing method: ", tkn.Header["alg"])
+			slog.Error("Unexpected signing method: ", "token_method", tkn.Header["alg"])
 			return nil, fmt.Errorf("unexpected signing method %v", tkn.Header["alg"])
 		}
 		return secretKey, nil
 	})
 
 	if err != nil {
-		log.Println("failed to parse the token in verify jwt")
+		slog.Error("Failed to parse the token in verify jwt", "error", err.Error())
 		return nil, err
 	}
 
@@ -44,6 +44,6 @@ func VerifyJWT(token string) (jwt.MapClaims, error) {
 		return claims, nil
 	}
 
-	log.Println("invalid token: ", token)
+	slog.Error("Invalid token", "errtkn", token)
 	return nil, fmt.Errorf("invalid token")
 }
