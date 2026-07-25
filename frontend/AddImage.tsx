@@ -1,14 +1,7 @@
 import React, { useState } from "react";
+import { ImageUploadMetadata } from "./App";
 
 // Define the interface for the form data (image details)
-interface ImageFormData {
-  description: string;
-  location: string;
-  iso: string;
-  shutterSpeed: string;
-  aperture: string;
-  file: File | null;
-}
 
 interface AdminProps {
   host: string;
@@ -16,14 +9,17 @@ interface AdminProps {
 
 export default function AddImage({ host }: AdminProps) {
   // State to handle form data
-  const [formData, setFormData] = useState<ImageFormData>({
-    description: "",
+  const [formData, setFormData] = useState<ImageUploadMetadata>({
+    camera: "",
+    aperture: null,
+    shutterSpeed: null,
+    iso: 0,
+    filmStock: null,
     location: "",
-    iso: "",
-    shutterSpeed: "",
-    aperture: "",
-    file: null,
+    description: ""
   });
+
+  const [file, setFile] = useState<File | null>(null);
 
   // State to track form submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,16 +35,7 @@ export default function AddImage({ host }: AdminProps) {
     }));
   };
 
-  // Handle file input change
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFormData((prevData) => ({
-        ...prevData,
-        file: e.target.files[0],
-      }));
-    }
-  };
-
+ 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,16 +43,15 @@ export default function AddImage({ host }: AdminProps) {
     setError(null);
     setSuccessMessage(null);
 
-    const { description, location, iso, shutterSpeed, aperture, file } =
-      formData;
-
     // Form data validation
     if (
-      !description ||
-      !location ||
-      !iso ||
-      !shutterSpeed ||
-      !aperture ||
+      formData.camera == null ||
+      formData.description == null ||
+      formData.iso == null ||
+      formData.location == null ||
+      formData.camera == "" ||
+      formData.description == "" ||
+      formData.location == "" ||
       !file
     ) {
       setError("Please fill all the fields and select a file.");
@@ -74,29 +60,30 @@ export default function AddImage({ host }: AdminProps) {
     }
 
     const formDataToSend = new FormData();
-    formDataToSend.append("description", description);
-    formDataToSend.append("location", location);
-    formDataToSend.append("iso", iso);
-    formDataToSend.append("shutterspeed", shutterSpeed);
-    formDataToSend.append("aperture", aperture);
     formDataToSend.append("file", file);
+    formDataToSend.append(
+      "metadata",
+      new Blob([JSON.stringify(formData)], { type: "application/json" })
+    );
 
     try {
       const response = await fetch("https://" + host + "/addimage", {
         method: "POST",
         body: formDataToSend,
+        credentials: "include"
       });
 
       if (response.ok) {
         setSuccessMessage("Image added successfully!");
         // Clear the form data on success
         setFormData({
-          description: "",
+          camera: "",
+          aperture: null,
+          shutterSpeed: null,
+          iso: 0,
+          filmStock: null,
           location: "",
-          iso: "",
-          shutterSpeed: "",
-          aperture: "",
-          file: null,
+          description: ""
         });
         // window.location.href = "/";
         window.location.reload();
@@ -116,6 +103,73 @@ export default function AddImage({ host }: AdminProps) {
       {error && <div className="red">{error}</div>}
       {successMessage && <div className="green">{successMessage}</div>}
       <form onSubmit={handleSubmit}>
+      <div>
+          <label>Camera:</label>
+          <input
+            className="form-input"
+            type="text"
+            name="camera"
+            value={formData.camera}
+            onChange={handleInputChange}
+            placeholder="What camera did you use?"
+            required
+          />
+        </div>
+
+
+        <div>
+          <label>ISO:</label>
+          <input
+            className="form-input"
+            type="text"
+            name="iso"
+            value={formData.iso}
+            onChange={handleInputChange}
+            placeholder="What ISO?"
+            required
+          />
+        </div>
+
+        <div>
+          <label>Shutter Speed:</label>
+          <input
+            className="form-input"
+            type="text"
+            name="shutterSpeed"
+            value={formData.shutterSpeed || ""}
+            onChange={handleInputChange}
+            placeholder="What shutter speed?"
+            required
+          />
+        </div>
+
+        <div>
+          <label>Aperture:</label>
+          <input
+            className="form-input"
+            type="text"
+            name="aperture"
+            value={formData.aperture || ""}
+            onChange={handleInputChange}
+            placeholder="What Aperture?"
+            required
+          />
+        </div>
+
+
+        <div>
+          <label>Film Stock:</label>
+          <input
+            className="form-input"
+            type="text"
+            name="filmstock"
+            value={formData.filmStock || ""}
+            onChange={handleInputChange}
+            placeholder="What Film stock?"
+            required
+          />
+        </div>
+      
         <div>
           <label>Description:</label>
           <input
@@ -124,7 +178,7 @@ export default function AddImage({ host }: AdminProps) {
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            placeholder="Enter image description"
+            placeholder="What in it?"
             required
           />
         </div>
@@ -137,57 +191,19 @@ export default function AddImage({ host }: AdminProps) {
             name="location"
             value={formData.location}
             onChange={handleInputChange}
-            placeholder="Enter location"
+            placeholder="Where'd ya take it?"
             required
           />
         </div>
 
-        <div>
-          <label>ISO:</label>
-          <input
-            className="form-input"
-            type="text"
-            name="iso"
-            value={formData.iso}
-            onChange={handleInputChange}
-            placeholder="Enter ISO"
-            required
-          />
-        </div>
-
-        <div>
-          <label>Shutter Speed:</label>
-          <input
-            className="form-input"
-            type="text"
-            name="shutterSpeed"
-            value={formData.shutterSpeed}
-            onChange={handleInputChange}
-            placeholder="Enter shutter speed"
-            required
-          />
-        </div>
-
-        <div>
-          <label>Aperture:</label>
-          <input
-            className="form-input"
-            type="text"
-            name="aperture"
-            value={formData.aperture}
-            onChange={handleInputChange}
-            placeholder="Enter aperture"
-            required
-          />
-        </div>
-
+        
         <div>
           <label>Image File:</label>
           <input
             className="form-input"
             type="file"
             name="file"
-            onChange={handleFileChange}
+            onChange={e => setFile(e.target.files[0])}
             accept="image/*"
             required
           />

@@ -1,5 +1,6 @@
 package xyz.wmmp.gallery.server.data;
 
+import java.io.FilterOutputStream;
 import java.net.FileNameMap;
 import java.time.LocalDateTime;
 
@@ -28,12 +29,16 @@ public class Image {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(nullable = false)
   private String filename;
-  
+
+  @Column(nullable = false)
   private String contentType;
 
+  @Column(nullable = false)
   private Long fileSizeBytes;
 
+  @Column(nullable = false)
   private String camera;
 
   @Enumerated(EnumType.STRING)
@@ -49,10 +54,13 @@ public class Image {
 
   private String filmStock;
 
+  @Column(nullable = false)
   private String location;
 
+  @Column(nullable = false)
   private String description;
 
+  @Column(nullable = false)
   private LocalDateTime uploadedTime;
 
 }

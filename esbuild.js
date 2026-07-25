@@ -4,7 +4,7 @@ const {sassPlugin} = require("esbuild-sass-plugin")
 esbuild
     .build({
         entryPoints: ["frontend/Index.tsx", "frontend/styles.scss"],
-        outdir: "gallery-server/public/",
+        outdir: "server/src/main/resources/static/",
         bundle: true,
         minify: true,
         loader: { '.ts': 'tsx', '.scss': 'css' },

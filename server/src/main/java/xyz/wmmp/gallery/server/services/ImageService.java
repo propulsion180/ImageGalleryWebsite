@@ -35,6 +35,7 @@ import xyz.wmmp.gallery.server.data.ImageUploadMetadata;
 import xyz.wmmp.gallery.server.data.ThumbnailDTO;
 import xyz.wmmp.gallery.server.repositories.ImageRepository;
 import xyz.wmmp.gallery.server.data.ImageType;
+import xyz.wmmp.gallery.server.services.StorageService;
 
 @Service
 public class ImageService {

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { User } from "./App";
 
 interface LoginProps {
-  setUser: (value: string) => void;
-  setAdmin: (value: boolean) => void;
+  setUser: (value: User | null) => void;
   host: string;
 }
 
-export default function Login({ setUser, setAdmin, host }: LoginProps) {
+export default function Login({ setUser, host }: LoginProps) {
   // States to hold form input values
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -20,8 +20,8 @@ export default function Login({ setUser, setAdmin, host }: LoginProps) {
 
     // Create an object to send as JSON
     const loginData = {
-      username: username,
-      password: password,
+      uName: username,
+      plainPassword: password,
     };
 
     try {
@@ -31,6 +31,7 @@ export default function Login({ setUser, setAdmin, host }: LoginProps) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(loginData),
       });
 
@@ -41,14 +42,10 @@ export default function Login({ setUser, setAdmin, host }: LoginProps) {
         return;
       }
 
-      // If login is successful, handle the response
-      const data = await response.json();
-      alert(`Welcome, ${data.username}!`); // Or redirect user after successful login
-      setUser(data.username);
-      setAdmin(data.admin);
-      // Optionally, you can store the token or handle redirecting:
-      // localStorage.setItem('auth_token', data.auth_token);
-      // window.location.href = '/dashboard'; // Redirect to a protected page
+      const u: User = await response.json();
+      alert(`Welcome, ${u.uName}!`); 
+      setUser(u);
+      navigate("/");
     } catch (err) {
       setError("An error occurred while trying to log in.");
       console.error("Error:", err);

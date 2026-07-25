@@ -6,6 +6,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,6 +52,7 @@ public class ImageController{
     return imageService.getImage(id);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/images")
   public ResponseEntity<Void> createImage(
     @RequestPart("file") MultipartFile file,
@@ -60,6 +62,7 @@ public class ImageController{
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/images/{id}")
   public ResponseEntity<Void> updateImage(
     @PathVariable Long id,
@@ -69,6 +72,7 @@ public class ImageController{
     return ResponseEntity.noContent().build();
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/images/{id}")
   public ResponseEntity<Void> deleteImage(@PathVariable Long id){
     imageService.deleteImage(id);

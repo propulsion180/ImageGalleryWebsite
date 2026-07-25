@@ -11,29 +11,55 @@ import Main from "./Main";
 import Single from "./Single";
 import Login from "./Login";
 import Signup from "./Signup";
-import Admin from "./Admin";
 import Header from "./Header";
 
+export enum ImageType {
+  DIGITAL,
+  FILM
+}
+
 export type ImageData = {
-  filepath: string;
-  description: string;
-  iso: string;
-  shutterspeed: string;
-  aperture: string;
+  id: number;
+  filename: string;
+  contentType: string;
+  fileSizeBytes: number;
+  camera: String;
+  type: ImageType;
+  aperture: string | null;
+  shutterSpeed: string | null;
+  iso: number;
+  filmStock: string | null;
   location: string;
+  description: string;
+  uploadedTime: string;
 };
 
-interface LoginResponse {
-  message: string;
-  username: string;
-  admin: boolean;
+export type ImageUploadMetadata = {
+  camera: string;
+  aperture: string | null;
+  shutterSpeed: string | null;
+  iso: number;
+  filmStock: string | null; 
+  location: string;
+  description: string; 
+}
+
+export enum UserType {
+  ADMIN,
+  NORMAL,
+}
+
+export type User = {
+  id: number
+  uName: string;
+  perms: UserType;
 }
 
 const App: React.FC = () => {
   console.log("starting");
+  const navigate = useNavigate();
   const [images, setImages] = useState<Map<string, ImageData>>(new Map());
-  const [user, setUser] = useState<string>("");
-  const [admin, setAdmin] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
   const logout = async () => {
     try {
       console.log("logging out");
@@ -45,34 +71,34 @@ const App: React.FC = () => {
 
       if (!response.ok) {
         throw new Error("Failed to log out");
-      }
-      setUser("");
-      setAdmin(false);
+      }      
+      setUser(null);
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
-  useEffect(() => {
-    console.log("querying");
-    fetch("https://" + host + "/all")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data: ImageData[]) => {
-        console.log(data);
-        const newImages = new Map<string, ImageData>();
-        data.forEach((image) => newImages.set(image.filepath, image));
-        setImages(newImages);
-      })
-      .catch((error) => {
-        console.error("Error fetching nodes", error);
-      });
+  // useEffect(() => {
+  //   console.log("querying");
+  //   fetch("https://" + host + "/all")
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status ${response.status}`);
+  //       }
+  //       return response.json();
+  //     })
+  //     .then((data: ImageData[]) => {
+  //       console.log(data);
+  //       const newImages = new Map<string, ImageData>();
+  //       data.forEach((image) => newImages.set(image.filepath, image));
+  //       setImages(newImages);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching nodes", error);
+  //     });
 
-    console.log("queried");
-  }, []);
+    // console.log("queried");
+  // }, []);
 
   useEffect(() => {
     fetch("https://" + host + "/tknlgn")
@@ -82,10 +108,8 @@ const App: React.FC = () => {
         }
         return response.json();
       })
-      .then((data: LoginResponse) => {
-        console.log(data.message);
-        setUser(data.username);
-        setAdmin(data.admin);
+      .then((data: User) => {
+        setUser(data);
       })
       .catch((error) => {
         console.error("Error fetching nodes", error);
@@ -104,10 +128,9 @@ const App: React.FC = () => {
           <Route
             path="/login"
             element={
-              <Login setUser={setUser} setAdmin={setAdmin} host={host} />
+              <Login setUser={setUser} host={host} />
             }
           />
-          <Route path="/signup" element={<Signup host={host} />} />
           <Route
             path="/admin"
             element={<Admin admin={admin} images={images} host={host} />}
