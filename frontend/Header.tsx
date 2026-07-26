@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ImageData, User } from "./App";
+import { ImageData, User, UserType } from "./App";
 
 interface HeaderProps {
   user: User | null;
@@ -10,10 +10,17 @@ interface HeaderProps {
 export default function Header({ user, logout }: HeaderProps) {
   const navigate = useNavigate();
 
+  async function handleLogout(e: React.MouseEvent<HTMLAnchorElement>){
+    e.preventDefault();
+    await logout();
+    navigate("/");
+  }
+
+  console.log(user);
   return (
     <div className="header">
       {user == null && <h1>Migada's Image Gallery</h1>}
-      {user != null && <h1>Welcome back {user.uName}.</h1>}
+      {user != null && <h1>Welcome back {user.username}.</h1>}
       <div className="navButtonContainer">
         <a
           className="nav-button"
@@ -23,7 +30,7 @@ export default function Header({ user, logout }: HeaderProps) {
         >
           Home
         </a>
-        {user == "" && (
+        {user == null && (
           <a
             className="nav-button"
             onClick={() => {
@@ -33,7 +40,7 @@ export default function Header({ user, logout }: HeaderProps) {
             Login
           </a>
         )}
-        {user != "" && admin && (
+        {user != null && user.perms == 'ADMIN' && (
           <a
             className="nav-button"
             onClick={() => {
@@ -43,8 +50,8 @@ export default function Header({ user, logout }: HeaderProps) {
             Admin
           </a>
         )}
-        {user != "" && (
-          <a className="nav-button" onClick={logout}>
+        {user != null && (
+          <a className="nav-button" onClick={handleLogout}>
             Logout
           </a>
         )}

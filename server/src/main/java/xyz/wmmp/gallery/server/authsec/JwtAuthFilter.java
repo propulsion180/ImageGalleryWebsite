@@ -40,7 +40,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             try {
                 Claims claims = jwtUtil.validate(token);
                 String role = claims.get("role", String.class);
-                GrantedAuthority authority = new SimpleGrantedAuthority(role);
+                GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
                 SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(claims.getSubject(), null,List.of(authority)));
             }catch (JwtException e){
                 //invalid token could log or leave anonymous.

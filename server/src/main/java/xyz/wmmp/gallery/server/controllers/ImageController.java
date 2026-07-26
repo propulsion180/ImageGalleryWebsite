@@ -1,6 +1,7 @@
 package xyz.wmmp.gallery.server.controllers;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -47,13 +48,19 @@ public class ImageController{
     
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/all")
+  public List<Image> getAll(){
+    return imageService.all();
+  }
+
   @GetMapping("/{id}")
   public Image getImage(@PathVariable Long id){
     return imageService.getImage(id);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PostMapping("/images")
+  @PostMapping
   public ResponseEntity<Void> createImage(
     @RequestPart("file") MultipartFile file,
     @RequestPart("metadata") ImageUploadMetadata metadata
@@ -63,7 +70,7 @@ public class ImageController{
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PutMapping("/images/{id}")
+  @PutMapping("/{id}")
   public ResponseEntity<Void> updateImage(
     @PathVariable Long id,
     @RequestBody ImageUploadMetadata metadata
@@ -73,7 +80,7 @@ public class ImageController{
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @DeleteMapping("/images/{id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteImage(@PathVariable Long id){
     imageService.deleteImage(id);
     return ResponseEntity.noContent().build();

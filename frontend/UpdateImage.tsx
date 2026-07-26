@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ImageData } from "./App";
+import { ImageData, ImageUploadMetadata } from "./App";
 
 // Define the interface for the form data (image details)
 interface ImageFormData {
@@ -20,14 +20,25 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
   const location = useLocation();
   const navigate = useNavigate();
   // State for form fields
+  const [formData, setFormData] = useState<ImageUploadMetadata>({
+    camera: image.camera,
+    aperture: image.aperture,
+    shutterSpeed: image.shutterSpeed,
+    iso: image.iso,
+    filmStock: image.filmStock,
+    location: image.location,
+    description: image.description
+  });
 
-  const [desc, setDesc] = useState<string>(image.description);
-  const [loc, setLoc] = useState<string>(image.location);
-  const [iso, setIso] = useState<string>(image.iso);
-  const [ss, setSs] = useState<string>(image.shutterspeed);
-  const [apt, setApt] = useState<string>(image.aperture);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };  
 
-  // State to track form submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -40,24 +51,28 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
     setSuccessMessage(null);
 
     // Form data validation
-    if (!desc || !loc || !iso || !ss || !apt) {
+    
+    if (
+      formData.camera == null ||
+      formData.description == null ||
+      formData.iso == null ||
+      formData.location == null ||
+      formData.camera == "" ||
+      formData.description == "" ||
+      formData.location == "" 
+    ) {
       setError("Please fill all the fields and select a file.");
       setIsSubmitting(false);
       return;
     }
-
+    
     const formDataToSend = new FormData();
-    formDataToSend.append("description", desc);
-    formDataToSend.append("location", loc);
-    formDataToSend.append("iso", iso);
-    formDataToSend.append("shutterspeed", ss);
-    formDataToSend.append("aperture", apt);
-    formDataToSend.append("filepath", image.filepath);
-
+    formDataToSend.append("metadata", new Blob([JSON.stringify(formData)], { type: "application/json" }));
     try {
-      const response = await fetch("https://" + host + "/setimage", {
+      const response = await fetch("http://" + host + "/images/" + image.id, {
         method: "PUT",
         body: formDataToSend,
+        credentials: "include"
       });
 
       if (response.ok) {
@@ -85,29 +100,16 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
       {error && <div>{error}</div>}
       {successMessage && <div>{successMessage}</div>}
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Description:</label>
-          <input
-            className="form-input"
-            type="text"
-            name="description"
-            value={desc}
-            onChange={(e) => {
-              setDesc(e.target.value);
-            }}
-            required
-          />
-        </div>
 
         <div>
-          <label>Location:</label>
+          <label>Camera:</label>
           <input
             className="form-input"
             type="text"
-            name="location"
-            value={loc}
+            name="camera"
+            value={formData.camera}
             onChange={(e) => {
-              setLoc(e.target.value);
+              handleInputChange
             }}
             required
           />
@@ -119,9 +121,9 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             className="form-input"
             type="text"
             name="iso"
-            value={iso}
+            value={formData.iso}
             onChange={(e) => {
-              setLoc(e.target.value);
+              handleInputChange
             }}
             required
           />
@@ -133,9 +135,9 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             className="form-input"
             type="text"
             name="shutterSpeed"
-            value={ss}
+            value={formData.shutterSpeed || ""}
             onChange={(e) => {
-              setSs(e.target.value);
+              handleInputChange
             }}
             required
           />
@@ -147,13 +149,57 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             className="form-input"
             type="text"
             name="aperture"
-            value={apt}
+            value={formData.aperture || ""}
             onChange={(e) => {
-              setApt(e.target.value);
+              handleInputChange
             }}
             required
           />
         </div>
+
+        <div>
+          <label>Film Stock:</label>
+          <input
+            className="form-input"
+            type="text"
+            name="filmStock"
+            value={formData.filmStock || ""}
+            onChange={(e) => {
+              handleInputChange
+            }}
+            required
+          />
+        </div>
+      
+        <div>
+          <label>Description:</label>
+          <input
+            className="form-input"
+            type="text"
+            name="description"
+            value={formData.description}
+            onChange={(e) => {
+              handleInputChange
+            }}
+            required
+          />
+        </div>
+
+        <div>
+          <label>Location:</label>
+          <input
+            className="form-input"
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={(e) => {
+              handleInputChange
+            }}
+            required
+          />
+        </div>
+
+        
 
         <button type="submit" className="small-button" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Update Image"}

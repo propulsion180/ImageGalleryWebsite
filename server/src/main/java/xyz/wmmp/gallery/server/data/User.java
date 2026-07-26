@@ -26,7 +26,7 @@ public class User {
   private Long id;
 
   @Column(nullable = false)
-  private String uName;
+  private String username;
 
   @JsonIgnore
   @Column(nullable = false)

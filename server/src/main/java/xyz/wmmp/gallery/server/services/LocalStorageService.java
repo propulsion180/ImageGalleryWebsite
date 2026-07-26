@@ -31,6 +31,7 @@ public class LocalStorageService implements StorageService{
   @Override
   public Resource load(String relativePath) throws IOException{
     Path fullPath = resolveOrThrow(relativePath);
+    System.out.println("Loading somethign in localstorage: " + fullPath.toString());
     if(!Files.exists(fullPath)){
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found: " + relativePath);
     }

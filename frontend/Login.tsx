@@ -20,13 +20,13 @@ export default function Login({ setUser, host }: LoginProps) {
 
     // Create an object to send as JSON
     const loginData = {
-      uName: username,
+      username: username,
       plainPassword: password,
     };
 
     try {
       // Send POST request to the server
-      const response = await fetch("https://" + host + "/login", {
+      const response = await fetch("http://" + host + "/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export default function Login({ setUser, host }: LoginProps) {
       }
 
       const u: User = await response.json();
-      alert(`Welcome, ${u.uName}!`); 
+      alert(`Welcome, ${u.username}!`); 
       setUser(u);
       navigate("/");
     } catch (err) {

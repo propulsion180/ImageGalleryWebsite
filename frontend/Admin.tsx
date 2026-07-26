@@ -1,39 +1,63 @@
-import React, { useState } from "react";
-import { ImageData } from "./App";
+import React, { useState, useEffect } from "react";
+import { ImageData, ImageUploadMetadata, User, UserType } from "./App";
 import { useNavigate } from "react-router-dom";
 import Description from "./Description";
 import AddImage from "./AddImage";
 import UpdateImage from "./UpdateImage";
 
 interface AdminProps {
-  admin: boolean;
-  images: Map<string, ImageData>;
+  user: User | null
   host: string;
 }
 
-export default function Admin({ admin, images, host }: AdminProps) {
+export default function Admin({ user, host }: AdminProps) {
   const navigate = useNavigate();
   const [page, setPage] = useState<string>("desc");
-  const [img, setImg] = useState<ImageData>({
-    filepath: "",
-    description: "",
+  const [images, setImages] = useState<Map<number, ImageData>>(new Map());
+  const [img, setImg] = useState<ImageUploadMetadata>({
+      camera: "",
+    aperture: null,
+    shutterSpeed: null,
+    iso: 0,
+    filmStock: null,
     location: "",
-    iso: "",
-    shutterspeed: "",
-    aperture: "",
+    description: ""
   });
-  if (!admin) {
+  if (!user || user.perms != 'ADMIN') {
     navigate("/");
   }
 
-  const deleteImage = async (filepath: string) => {
+  
+  useEffect(() => {
+    console.log("Retrieve all images for administration");
+    fetch("http://" + host + "/images/all")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data: ImageData[]) => {
+        console.log(data);
+        const newImages = new Map<number, ImageData>();
+        data.forEach((image) => newImages.set(image.id, image));
+        setImages(newImages);
+      })
+      .catch((error) => {
+        console.error("Error fetching nodes", error);
+      });
+
+   console.log("All images retrieved");
+  }, []);
+
+
+  const deleteImage = async (id: number) => {
     try {
-      const response = await fetch("https://" + host + "/delimage", {
+      const response = await fetch("http://" + host + "/images/" + id, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ filepath }),
         credentials: "include",
       });
 
@@ -41,7 +65,7 @@ export default function Admin({ admin, images, host }: AdminProps) {
         throw new Error("Failed to delete image");
       }
       // window.location.href = "/";
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error("Error deleting image: ", error);
       alert("error deleting image");
@@ -85,14 +109,14 @@ export default function Admin({ admin, images, host }: AdminProps) {
         <tbody>
           {Array.from(images).map(([key, value]) => (
             <tr>
-              <td>{value.filepath}</td>
+              <td>{value.filename}</td>
               <td>{value.description}</td>
               <td>{value.location}</td>
               <td>
                 <a
                   className="small-button"
                   onClick={() => {
-                    deleteImage(value.filepath);
+                    deleteImage(value.id);
                   }}
                 >
                   Delete

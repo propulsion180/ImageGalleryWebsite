@@ -14,9 +14,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +37,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Controller
+@RequestMapping("/admin")
 public class AuthController {
 
     @Autowired private CustomUserDetailsService userDetailsService;
@@ -44,13 +47,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDTO> login(@RequestBody LoginRequest request, HttpServletResponse response){
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.uName());
+        User user;
+        try {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
 
-        if(!passwordEncoder.matches(request.plainPassword, userDetails.getPassword())){ //check password
-            throw new BadCredentialsException("Invalid credentials");
+            if(!passwordEncoder.matches(request.plainPassword(), userDetails.getPassword())){ //check password
+                throw new BadCredentialsException("Invalid credentials");
+            }
+
+            user = userRepository.findByUsername(request.username()).orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+        }catch(UsernameNotFoundException | BadCredentialsException e){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
-
-        User user = userRepository.findByUName(request.uName());
 
         String jti = UUID.randomUUID().toString();
         String token = jwtUtil.generateToken(jti, user.getId().toString(), user.getPerms().toString());
@@ -71,14 +79,13 @@ public class AuthController {
         return ResponseEntity.ok(UserDTO.from(user));
     }
 
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/tknlgn")
-    public ResponseEntity<UserDTO> tokenLogin(@CookieValue(value = "session", required = true) String token ,HttpServletResponse response){
+    @GetMapping("/tknlgn")
+    public ResponseEntity<UserDTO> tokenLogin(@CookieValue(value = "session", required = false) String token ,HttpServletResponse response){
         if (token != null){
             try{
                 Claims claims = jwtUtil.validate(token);
                 String userId = claims.getSubject();
-                User user = userRepository.findById(Long.getLong(userId)).orElseThrow();
+                User user = userRepository.findById(Long.parseLong(userId)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "You aren't logged in yet! :)"));
                 return ResponseEntity.ok(UserDTO.from(user));
             }catch (JwtException ignored){}
         }
@@ -86,17 +93,17 @@ public class AuthController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "You are not logged in yet! :)");
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CookieValue(value = "session", required = false) String token, HttpServletResponse response){
         if (token != null){
             try{
                 Claims claims = jwtUtil.validate(token);
                 String userId = claims.getSubject();
-                User user = userRepository.findById(Long.getLong(userId)).orElseThrow();
-                user.setJtiToken(null);
-                user.setTokenExpiry(null);
-                userRepository.save(user);
+                userRepository.findById(Long.parseLong(userId)).ifPresent(user -> {
+                    user.setJtiToken(null);
+                    user.setTokenExpiry(null);
+                    userRepository.save(user);
+                });
             }catch (JwtException ignored){}
         }
 
@@ -107,7 +114,7 @@ public class AuthController {
     }
 
     @PreAuthorize(("hasRole('ADMIN')"))
-    @PostMapping("/admin/change-password")
+    @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(@CookieValue(value = "session", required = false) String token, @RequestBody ChangePasswordRequest request, HttpServletResponse response){
         if(request.newPassword() == null || request.newPassword().isBlank()){ return ResponseEntity.badRequest().build(); }
         if (token != null){
@@ -128,6 +135,6 @@ public class AuthController {
         return ResponseEntity.accepted().build();
     }
 
-    record LoginRequest(String uName, String plainPassword){}
+    record LoginRequest(String username, String plainPassword){}
     record ChangePasswordRequest(String newPassword){}
 }

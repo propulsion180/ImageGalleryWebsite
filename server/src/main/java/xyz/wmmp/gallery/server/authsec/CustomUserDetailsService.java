@@ -18,10 +18,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        xyz.wmmp.gallery.server.data.User user = userRepository.findByUName(username);
+        xyz.wmmp.gallery.server.data.User user = userRepository.findByUsername(username).orElseThrow();
 
         return User.builder()
-                .username(user.getUName())
+                .username(user.getUsername())
                 .password(user.getPasswordHash())
                 .roles(user.getPerms().toString())
                 .build();

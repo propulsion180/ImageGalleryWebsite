@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ImageUploadMetadata } from "./App";
+import { useNavigate } from "react-router-dom";
 
 // Define the interface for the form data (image details)
 
@@ -8,6 +9,8 @@ interface AdminProps {
 }
 
 export default function AddImage({ host }: AdminProps) {
+
+  const navigate = useNavigate();
   // State to handle form data
   const [formData, setFormData] = useState<ImageUploadMetadata>({
     camera: "",
@@ -67,7 +70,7 @@ export default function AddImage({ host }: AdminProps) {
     );
 
     try {
-      const response = await fetch("https://" + host + "/addimage", {
+      const response = await fetch("http://" + host + "/images", {
         method: "POST",
         body: formDataToSend,
         credentials: "include"
@@ -86,7 +89,8 @@ export default function AddImage({ host }: AdminProps) {
           description: ""
         });
         // window.location.href = "/";
-        window.location.reload();
+        // window.location.reload();
+        navigate("/");
       } else {
         setError("Failed to add image. Please try again.");
       }
@@ -139,7 +143,6 @@ export default function AddImage({ host }: AdminProps) {
             value={formData.shutterSpeed || ""}
             onChange={handleInputChange}
             placeholder="What shutter speed?"
-            required
           />
         </div>
 
@@ -152,7 +155,6 @@ export default function AddImage({ host }: AdminProps) {
             value={formData.aperture || ""}
             onChange={handleInputChange}
             placeholder="What Aperture?"
-            required
           />
         </div>
 
@@ -162,11 +164,10 @@ export default function AddImage({ host }: AdminProps) {
           <input
             className="form-input"
             type="text"
-            name="filmstock"
+            name="filmStock"
             value={formData.filmStock || ""}
             onChange={handleInputChange}
             placeholder="What Film stock?"
-            required
           />
         </div>
       

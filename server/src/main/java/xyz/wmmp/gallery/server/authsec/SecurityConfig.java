@@ -28,8 +28,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/favicon.ico").permitAll()
                         .requestMatchers("/images/files/**").permitAll()
+                        .requestMatchers("/images/all").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/images/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/images/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

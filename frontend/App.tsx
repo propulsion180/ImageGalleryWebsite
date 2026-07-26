@@ -12,6 +12,7 @@ import Single from "./Single";
 import Login from "./Login";
 import Signup from "./Signup";
 import Header from "./Header";
+import Admin from "./Admin";
 
 export enum ImageType {
   DIGITAL,
@@ -23,7 +24,7 @@ export type ImageData = {
   filename: string;
   contentType: string;
   fileSizeBytes: number;
-  camera: String;
+  camera: string;
   type: ImageType;
   aperture: string | null;
   shutterSpeed: string | null;
@@ -51,20 +52,18 @@ export enum UserType {
 
 export type User = {
   id: number
-  uName: string;
+  username: string;
   perms: UserType;
 }
 
 const App: React.FC = () => {
   console.log("starting");
-  const navigate = useNavigate();
-  const [images, setImages] = useState<Map<string, ImageData>>(new Map());
   const [user, setUser] = useState<User | null>(null);
   const logout = async () => {
     try {
       console.log("logging out");
       // Send a request to the backend to log the user out
-      const response = await fetch("https://" + host + "/logout", {
+      const response = await fetch("/admin/logout", {
         method: "POST",
         credentials: "include", // Ensure cookies are sent with the request
       });
@@ -73,35 +72,12 @@ const App: React.FC = () => {
         throw new Error("Failed to log out");
       }      
       setUser(null);
-      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
-  // useEffect(() => {
-  //   console.log("querying");
-  //   fetch("https://" + host + "/all")
-  //     .then((response) => {
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status ${response.status}`);
-  //       }
-  //       return response.json();
-  //     })
-  //     .then((data: ImageData[]) => {
-  //       console.log(data);
-  //       const newImages = new Map<string, ImageData>();
-  //       data.forEach((image) => newImages.set(image.filepath, image));
-  //       setImages(newImages);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching nodes", error);
-  //     });
-
-    // console.log("queried");
-  // }, []);
-
-  useEffect(() => {
-    fetch("https://" + host + "/tknlgn")
+    useEffect(() => {
+    fetch("http://" + host + "/admin/tknlgn")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status ${response.status}`);
@@ -121,10 +97,10 @@ const App: React.FC = () => {
   return (
     <div className="center">
       <Router>
-        <Header user={user} admin={admin} logout={logout} />
+        <Header user={user} logout={logout} />
         <Routes>
-          <Route path="/" element={<Main user={user} images={images} />} />
-          <Route path="/single" element={<Single />} />
+          <Route path="/" element={<Main user={user} host={host} />} />
+          <Route path="/single" element={<Single host={host} />} />
           <Route
             path="/login"
             element={
@@ -133,7 +109,7 @@ const App: React.FC = () => {
           />
           <Route
             path="/admin"
-            element={<Admin admin={admin} images={images} host={host} />}
+            element={<Admin user={user} host={host} />}
           />
         </Routes>
       </Router>

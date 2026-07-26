@@ -58,7 +58,12 @@ public class ImageService {
     return imageRepository.findById(id).orElseThrow(() -> new NoSuchElementException("An image with the id " + id + " was not found in the repository"));
   }
 
+  public List<Image> all(){
+    return imageRepository.findAll();
+  }
+
   public void createImage(MultipartFile file, ImageUploadMetadata metadata) throws IOException {
+    System.out.println("Entered createImage");
     BufferedImage original;
     try(InputStream is = file.getInputStream()){
       original = ImageIO.read(is);
@@ -68,12 +73,13 @@ public class ImageService {
 
     String fileName = file.getOriginalFilename();
     byte[] fullResBytes = compressToJpg(original, 1.0f);
-    storageService.save("full/" + fileName + ".jpg", fullResBytes);
-
+    storageService.save("full/" + fileName, fullResBytes);
+    System.out.println("Read file its name is " + fileName);
+    System.out.println("Saving original");
     BufferedImage thumbnail = resize(original, 400);
     byte[] thumbBytes = compressToJpg(thumbnail, 0.6f);
-    storageService.save("thumb/" + fileName + ".jpg", thumbBytes);
-
+    storageService.save("thumb/" + fileName, thumbBytes);
+    System.out.println("Savign thumb");
     Image i = new Image();
     i.setFilename(fileName);
     i.setContentType("image/jpeg");
@@ -93,6 +99,7 @@ public class ImageService {
     i.setUploadedTime(LocalDateTime.now());
 
     imageRepository.save(i);
+    System.out.println("Saving image object");
   }
 
   public void updateImage(Long id, ImageUploadMetadata metadata) throws IOException {
