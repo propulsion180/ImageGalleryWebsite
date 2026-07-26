@@ -3,6 +3,7 @@ package xyz.wmmp.gallery.server.services;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
+
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
 
 import ch.qos.logback.classic.joran.sanity.IfNestedWithinSecondPhaseElementSC;
 import xyz.wmmp.gallery.server.data.Image;
@@ -70,6 +75,9 @@ public class ImageService {
     }
 
     if(original == null){throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported or corrupt image file");}
+
+    int orientation = getExifOrientation(file.getBytes());
+    original = applyOrientation(original, orientation);
 
     String fileName = file.getOriginalFilename();
     byte[] fullResBytes = compressToJpg(original, 1.0f);
@@ -146,5 +154,44 @@ public class ImageService {
     g.drawImage(original, 0, 0, newWidth, newHeight, null);
     g.dispose();
     return resized;
+  }
+
+  private int getExifOrientation(byte[] imageBytes){
+    try{
+      Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(imageBytes));
+      ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+      if(directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)){
+        return directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+      }
+    }catch(Exception e){
+      
+    }
+    return 1;
+  }
+
+  private BufferedImage applyOrientation(BufferedImage image, int orientation){
+    return switch(orientation){
+      case 3 -> rotate(image, 180);
+      case 6 -> rotate(image, 90);
+      case 8 -> rotate(image, 270);
+      default -> image;
+    };
+  }
+
+  private BufferedImage rotate(BufferedImage image, int degrees){
+    double radians = Math.toRadians(degrees);
+    int w = image.getWidth(), h = image.getHeight();
+
+    int newW = (degrees == 90 || degrees == 270)? h : w;
+    int newH = (degrees == 90 || degrees == 270)? w : h;
+
+    BufferedImage rotated = new BufferedImage(newW, newH, image.getType());
+    Graphics2D g = rotated.createGraphics();
+    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+    g.translate((newW - w) / 2, (newH - h) / 2);
+    g.rotate(radians, w / 2.0, h / 2.0);
+    g.drawImage(image, 0, 0, null);
+    g.dispose();
+    return rotated;
   }
 }
