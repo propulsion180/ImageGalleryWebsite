@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Metric;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -25,11 +26,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.zaxxer.hikari.metrics.MetricsTrackerFactory;
+
 import xyz.wmmp.gallery.server.authsec.CustomUserDetailsService;
 import xyz.wmmp.gallery.server.authsec.JwtUtil;
+import xyz.wmmp.gallery.server.data.LoginAttemptDTO;
 import xyz.wmmp.gallery.server.data.User;
 import xyz.wmmp.gallery.server.data.UserDTO;
 import xyz.wmmp.gallery.server.repositories.UserRepository;
+import xyz.wmmp.gallery.server.trackers.LoginAttemptTracker;
+import xyz.wmmp.gallery.server.trackers.RequestMetricsTracker;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -44,6 +50,8 @@ public class AuthController {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private JwtUtil jwtUtil;
     @Autowired private UserRepository userRepository;
+    @Autowired private LoginAttemptTracker loginAttemptTracker;
+    
 
     @PostMapping("/login")
     public ResponseEntity<UserDTO> login(@RequestBody LoginRequest request, HttpServletResponse response){
@@ -57,6 +65,7 @@ public class AuthController {
 
             user = userRepository.findByUsername(request.username()).orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
         }catch(UsernameNotFoundException | BadCredentialsException e){
+            loginAttemptTracker.recordFailure(request.username());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
 
@@ -75,7 +84,7 @@ public class AuthController {
                 .path("/")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
+        loginAttemptTracker.recordSuccess();
         return ResponseEntity.ok(UserDTO.from(user));
     }
 

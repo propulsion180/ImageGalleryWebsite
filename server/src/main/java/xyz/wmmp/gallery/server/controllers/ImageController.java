@@ -25,15 +25,18 @@ import xyz.wmmp.gallery.server.data.ThumbnailDTO;
 import xyz.wmmp.gallery.server.data.Image;
 import xyz.wmmp.gallery.server.data.ImageUploadMetadata;
 import xyz.wmmp.gallery.server.services.ImageService;
+import xyz.wmmp.gallery.server.trackers.RecentErrorTracker;
 
 @RestController
 @RequestMapping("/images")
 public class ImageController{
 
   private final ImageService imageService;
+  private final RecentErrorTracker recentErrorTracker;
 
-  public ImageController(ImageService imageService){
+  public ImageController(ImageService imageService, RecentErrorTracker recentErrorTracker){
     this.imageService = imageService;
+    this.recentErrorTracker = recentErrorTracker;
   }
 
   @GetMapping("/thumbnails")
@@ -90,5 +93,11 @@ public class ImageController{
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<String> handleBadSort(IllegalArgumentException ex){
     return ResponseEntity.badRequest().body("Invalid sort argument, use 'asc' or 'desc'");
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<String> handleGenericException(Exception e){
+    recentErrorTracker.record(e.getClass().getSimpleName() + ": " + e.getMessage());
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong inside the server. Sorry :(");    
   }
 }

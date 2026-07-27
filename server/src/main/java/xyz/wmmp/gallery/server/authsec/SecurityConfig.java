@@ -12,11 +12,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import xyz.wmmp.gallery.server.trackers.MetricFilter;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    @Autowired
-    private JwtAuthFilter jwtAuthFilter;
+    @Autowired private JwtAuthFilter jwtAuthFilter;
+    @Autowired private MetricFilter metricFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,12 +32,14 @@ public class SecurityConfig {
                         .requestMatchers("/images/files/**").permitAll()
                         .requestMatchers("/images/all").hasRole("ADMIN")
                         .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/admin/metrics/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/images/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(metricFilter, JwtAuthFilter.class);
         return http.build();
     }
 }
