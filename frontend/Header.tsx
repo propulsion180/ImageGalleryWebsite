@@ -30,14 +30,14 @@ export default function Header({ user, logout }: HeaderProps) {
         >
           Home
         </a>
-        {user == null && (
+        {user != null && user.perms == 'ADMIN' && (
           <a
             className="nav-button"
             onClick={() => {
-              navigate("/login");
+              navigate("/stats");
             }}
           >
-            Login
+            Stats
           </a>
         )}
         {user != null && user.perms == 'ADMIN' && (

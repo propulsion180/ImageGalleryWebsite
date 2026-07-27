@@ -235,7 +235,6 @@ html {
     margin: 1em auto;
     color: var(--srcery-palette-primary-bright-white);
     border: 1px solid var(--srcery-palette-primary-bright-white);
-    border-radius: 2px;
 }
 
 .description-table th,
@@ -259,4 +258,51 @@ button {
     margin: 1rem auto;
     align-items: center;
     text-align: center;
+}
+
+
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em auto;
+    color: var(--srcery-palette-primary-bright-white);
+    border: 1px solid var(--srcery-palette-primary-bright-white);
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 0.2em;
+    border: 1px solid var(--srcery-palette-primary-bright-white);
+    text-align: center;
+}
+
+.stats-table th {
+    background-color: var(--srcery-palette-secondary-xgray2);
+    font-weight: bold;
+}
+
+.stats-table-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--srcery-palette-primary-bright-white);
+}
+
+.stats-table-wrapper .stats-table {
+    margin: 0; 
+    border: none; 
+}
+
+.stats-table thead tr:first-child th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--srcery-palette-secondary-xgray2);
+}
+
+.stats-table thead tr:nth-child(2) th {
+    position: sticky;
+    top: 1.6em; 
+    z-index: 1;
+    background-color: var(--srcery-palette-secondary-xgray2);
 }

@@ -10,9 +10,9 @@ import {
 import Main from "./Main";
 import Single from "./Single";
 import Login from "./Login";
-import Signup from "./Signup";
 import Header from "./Header";
 import Admin from "./Admin";
+import Stats from "./Stats";
 
 export enum ImageType {
   DIGITAL,
@@ -111,6 +111,7 @@ const App: React.FC = () => {
             path="/admin"
             element={<Admin user={user} host={host} />}
           />
+          <Route path="/stats" element={<Stats />} />
         </Routes>
       </Router>
     </div>
