@@ -30,6 +30,26 @@ export default function Header({ user, logout }: HeaderProps) {
         >
           Home
         </a>
+        {user == null && (
+          <a
+            className="nav-button"
+            onClick={() => {
+              navigate("/contactform");
+            }}
+          >
+            Contact Me
+          </a>
+        )}
+        {user != null && user.perms == 'ADMIN' && (
+          <a
+            className="nav-button"
+            onClick={() => {
+              navigate("/contacts");
+            }}
+          >
+            Contacts
+          </a>
+        )}    
         {user != null && user.perms == 'ADMIN' && (
           <a
             className="nav-button"
@@ -47,7 +67,7 @@ export default function Header({ user, logout }: HeaderProps) {
               navigate("/admin");
             }}
           >
-            Admin
+            Photos
           </a>
         )}
         {user != null && (

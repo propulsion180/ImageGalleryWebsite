@@ -13,6 +13,8 @@ import Login from "./Login";
 import Header from "./Header";
 import Admin from "./Admin";
 import Stats from "./Stats";
+import Contacts from "./Contacts";
+import ContactForm from "./ContactForm";
 
 export enum ImageType {
   DIGITAL,
@@ -101,6 +103,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Main user={user} host={host} />} />
           <Route path="/single" element={<Single host={host} />} />
+          <Route path="/contactform" element={<ContactForm />} />
           <Route
             path="/login"
             element={
@@ -111,6 +114,7 @@ const App: React.FC = () => {
             path="/admin"
             element={<Admin user={user} host={host} />}
           />
+          <Route path="/contacts" element={<Contacts />} />
           <Route path="/stats" element={<Stats />} />
         </Routes>
       </Router>

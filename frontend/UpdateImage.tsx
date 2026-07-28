@@ -66,12 +66,11 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
       return;
     }
     
-    const formDataToSend = new FormData();
-    formDataToSend.append("metadata", new Blob([JSON.stringify(formData)], { type: "application/json" }));
     try {
       const response = await fetch("http://" + host + "/images/" + image.id, {
         method: "PUT",
-        body: formDataToSend,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
         credentials: "include"
       });
 
@@ -108,9 +107,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             type="text"
             name="camera"
             value={formData.camera}
-            onChange={(e) => {
-              handleInputChange
-            }}
+            onChange={handleInputChange}
             required
           />
         </div>
@@ -122,9 +119,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             type="text"
             name="iso"
             value={formData.iso}
-            onChange={(e) => {
-              handleInputChange
-            }}
+            onChange={handleInputChange}
             required
           />
         </div>
@@ -136,10 +131,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             type="text"
             name="shutterSpeed"
             value={formData.shutterSpeed || ""}
-            onChange={(e) => {
-              handleInputChange
-            }}
-            required
+            onChange={handleInputChange}
           />
         </div>
 
@@ -150,10 +142,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             type="text"
             name="aperture"
             value={formData.aperture || ""}
-            onChange={(e) => {
-              handleInputChange
-            }}
-            required
+            onChange={handleInputChange}
           />
         </div>
 
@@ -164,10 +153,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             type="text"
             name="filmStock"
             value={formData.filmStock || ""}
-            onChange={(e) => {
-              handleInputChange
-            }}
-            required
+            onChange={handleInputChange}
           />
         </div>
       
@@ -178,9 +164,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             type="text"
             name="description"
             value={formData.description}
-            onChange={(e) => {
-              handleInputChange
-            }}
+            onChange={handleInputChange}
             required
           />
         </div>
@@ -192,9 +176,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
             type="text"
             name="location"
             value={formData.location}
-            onChange={(e) => {
-              handleInputChange
-            }}
+            onChange={handleInputChange}
             required
           />
         </div>

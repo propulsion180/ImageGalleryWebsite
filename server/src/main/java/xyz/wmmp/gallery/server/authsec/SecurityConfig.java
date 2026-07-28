@@ -30,12 +30,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/favicon.ico", "/login").permitAll()
                         .requestMatchers("/images/files/**").permitAll()
-                        .requestMatchers("/images/all").hasRole("ADMIN")
-                        .requestMatchers("/admin/**").permitAll()
-                        .requestMatchers("/admin/metrics/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/images/**").hasRole("ADMIN")
+                        .requestMatchers("/images/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/contact/**").permitAll()
+                        .requestMatchers("/contact/**").hasRole("ADMIN")
+                        
+                        .requestMatchers("/admin/metrics/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").permitAll()
+                        
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

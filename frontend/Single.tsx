@@ -8,6 +8,7 @@ interface SingleProps {
 }
 export default function Single({ host }: SingleProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const imgid: number | undefined = location.state?.id;
   const [image, setImage] = useState<ImageData | null>(null);
   
@@ -35,6 +36,7 @@ export default function Single({ host }: SingleProps) {
     <div className="single-container"> 
         <img src={"/images/files/full/" + image.filename} />
         <Description image={image} />
+        <a className="small-button" onClick={() => {navigate("/contactform", { state: { id: image.id }});}}>Order Physical Prints</a>
     </div>
     
   ):(

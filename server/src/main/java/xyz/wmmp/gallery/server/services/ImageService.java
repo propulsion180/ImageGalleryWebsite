@@ -93,7 +93,7 @@ public class ImageService {
     i.setContentType("image/jpeg");
     i.setFileSizeBytes((long) fullResBytes.length);
     i.setCamera(metadata.camera());
-    if(metadata.filmStock().isEmpty() || metadata.filmStock() == null){
+    if(metadata.filmStock() == null || metadata.filmStock().isEmpty()){
       i.setAperture(metadata.aperture());
       i.setShutterSpeed(metadata.shutterSpeed());
       i.setType(ImageType.DIGITAL);
@@ -113,7 +113,7 @@ public class ImageService {
   public void updateImage(Long id, ImageUploadMetadata metadata) throws IOException {
     Image i = imageRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No image with id " + id));
     i.setCamera(metadata.camera());
-    if(metadata.filmStock().isEmpty() || metadata.filmStock() == null){
+    if(metadata.filmStock() == null || metadata.filmStock().isEmpty()){
       i.setAperture(metadata.aperture());
       i.setShutterSpeed(metadata.shutterSpeed());
       i.setType(ImageType.DIGITAL);
