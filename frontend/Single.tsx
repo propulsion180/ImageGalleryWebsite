@@ -34,7 +34,7 @@ export default function Single({ host }: SingleProps) {
   return image !== null ? (
       
     <div className="single-container"> 
-        <img src={"/images/files/full/" + image.filename} />
+        <div className="protected-image-wrapper"><img onContextMenu={(e) => e.preventDefault()} draggable={false} src={"/images/files/full/" + image.filename} /></div>
         <Description image={image} />
         <a className="small-button" onClick={() => {navigate("/contactform", { state: { id: image.id }});}}>Order Physical Prints</a>
     </div>

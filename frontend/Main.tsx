@@ -96,7 +96,7 @@ export default function Main({ user, host }: MainProps) {
 
   return (
     <div>
-      <button onClick={toggleSort}>
+      <button className="small-button" onClick={toggleSort}>
         Sort: {sort === "asc" ? "Chronological": "Reverse Chronological"}
       </button>
       <div className="allimage-grid">

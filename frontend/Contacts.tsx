@@ -61,7 +61,7 @@ export default function Contacts(){
       <div className="stats-table-wrapper">
         <table className="stats-table">
           <thead>
-            <tr><th colSpan={2}>Contact Requests</th></tr>
+            <tr><th colSpan={6}>Contact Requests</th></tr>
             <tr><th>ID</th><th>Name</th><th>Email</th><th>Message</th><th>ImageId</th><th>Logout</th></tr>
           </thead>
           <tbody>
