@@ -37,7 +37,7 @@ export default function Contacts(){
 
   const deleteRequest = async (id: number) => {
     try{
-      const response = await fetch(`/contact/{id}`,{
+      const response = await fetch(`/contact/${id}`,{
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

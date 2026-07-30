@@ -22,7 +22,7 @@ export default function Description({ image }: DescriptionProps) {
             <td>Location</td>
             <td>{image.location}</td>
           </tr>
-          {image.type == ImageType.DIGITAL &&
+          {image.type == "DIGITAL" &&
             
             <tr>
               <td>Aperture</td>
@@ -30,13 +30,13 @@ export default function Description({ image }: DescriptionProps) {
             </tr>
           }
 
-          {image.type == ImageType.DIGITAL &&
+          {image.type == "DIGITAL" &&
             <tr>
               <td>Shutter Speed</td>
               <td>f/{image.shutterSpeed}</td>
             </tr>
           }
-          {image.type == ImageType.FILM &&
+          {image.type == "FILM" &&
             <tr>
               <td>Film Stock</td>
               <td>{image.filmStock}</td>
