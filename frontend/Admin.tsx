@@ -30,7 +30,7 @@ export default function Admin({ user, host }: AdminProps) {
   
   useEffect(() => {
     console.log("Retrieve all images for administration");
-    fetch("http://" + host + "/images/all")
+    fetch("/images/all")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status ${response.status}`);
@@ -53,7 +53,7 @@ export default function Admin({ user, host }: AdminProps) {
 
   const deleteImage = async (id: number) => {
     try {
-      const response = await fetch("http://" + host + "/images/" + id, {
+      const response = await fetch("/images/" + id, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

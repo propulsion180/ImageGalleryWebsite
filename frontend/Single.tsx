@@ -14,7 +14,7 @@ export default function Single({ host }: SingleProps) {
   
   useEffect(() => {
     console.log("Retrieve all images for administration");
-    fetch("http://" + host + "/images/" + imgid)
+    fetch("/images/" + imgid)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status ${response.status}`);

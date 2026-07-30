@@ -26,7 +26,7 @@ export default function Login({ setUser, host }: LoginProps) {
 
     try {
       // Send POST request to the server
-      const response = await fetch("http://" + host + "/admin/login", {
+      const response = await fetch("/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

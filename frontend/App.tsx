@@ -79,7 +79,7 @@ const App: React.FC = () => {
     }
   };
     useEffect(() => {
-    fetch("http://" + host + "/admin/tknlgn")
+    fetch("/admin/tknlgn")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status ${response.status}`);

@@ -70,7 +70,7 @@ export default function AddImage({ host }: AdminProps) {
     );
 
     try {
-      const response = await fetch("http://" + host + "/images", {
+      const response = await fetch("/images", {
         method: "POST",
         body: formDataToSend,
         credentials: "include"

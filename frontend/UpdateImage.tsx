@@ -67,7 +67,7 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
     }
     
     try {
-      const response = await fetch("http://" + host + "/images/" + image.id, {
+      const response = await fetch("/images/" + image.id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
