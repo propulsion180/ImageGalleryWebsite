@@ -76,7 +76,8 @@ export default function UpdateImage({ image, host }: UpdateImageProps) {
 
       if (response.ok) {
         setSuccessMessage("Image updated successfully!");
-        navigate("/admin"); // Redirect to another page after success
+        window.location.reload();
+        // navigate("/admin"); // Redirect to another page after success
       } else {
         setError("Failed to update image. Please try again.");
       }

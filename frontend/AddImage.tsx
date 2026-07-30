@@ -89,8 +89,8 @@ export default function AddImage({ host }: AdminProps) {
           description: ""
         });
         // window.location.href = "/";
-        // window.location.reload();
-        navigate("/");
+        window.location.reload();
+        // navigate("/");
       } else {
         setError("Failed to add image. Please try again.");
       }

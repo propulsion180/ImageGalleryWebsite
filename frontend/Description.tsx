@@ -26,14 +26,14 @@ export default function Description({ image }: DescriptionProps) {
             
             <tr>
               <td>Aperture</td>
-              <td>f/{image.aperture}</td>
+              <td>{image.aperture}</td>
             </tr>
           }
 
           {image.type == "DIGITAL" &&
             <tr>
               <td>Shutter Speed</td>
-              <td>f/{image.shutterSpeed}</td>
+              <td>{image.shutterSpeed}s</td>
             </tr>
           }
           {image.type == "FILM" &&
