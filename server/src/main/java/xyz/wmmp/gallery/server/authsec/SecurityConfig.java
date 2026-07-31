@@ -28,7 +28,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/favicon.ico", "/login").permitAll()
+                        .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/*.png", "/site.webmanifest", "/favicon.ico", "/login").permitAll()
                         .requestMatchers("/images/files/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/images/**").hasRole("ADMIN")
