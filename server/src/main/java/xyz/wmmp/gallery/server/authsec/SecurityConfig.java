@@ -28,7 +28,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/*.png", "/site.webmanifest", "/favicon.ico", "/login").permitAll()
+                        .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/*.png", "/site.webmanifest", "/favicon.ico", "/login", "/single/**").permitAll()
                         .requestMatchers("/images/files/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/images/**").hasRole("ADMIN")
@@ -39,7 +39,8 @@ public class SecurityConfig {
                         
                         .requestMatchers("/admin/metrics/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").permitAll()
-                        
+                        .requestMatchers(HttpMethod.GET, "/sitemap.xml").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/robots.txt").permitAll() 
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

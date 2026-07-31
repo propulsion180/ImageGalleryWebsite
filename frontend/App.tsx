@@ -101,18 +101,18 @@ const App: React.FC = () => {
       <Router>
         <Header user={user} logout={logout} />
         <Routes>
-          <Route path="/" element={<Main user={user} host={host} />} />
-          <Route path="/single" element={<Single host={host} />} />
+          <Route path="/" element={<Main user={user} />} />
+          <Route path="/single/:id" element={<Single />} />
           <Route path="/contactform" element={<ContactForm />} />
           <Route
             path="/login"
             element={
-              <Login setUser={setUser} host={host} />
+              <Login setUser={setUser} />
             }
           />
           <Route
             path="/admin"
-            element={<Admin user={user} host={host} />}
+            element={<Admin user={user} />}
           />
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/stats" element={<Stats />} />

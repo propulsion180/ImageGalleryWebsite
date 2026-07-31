@@ -1,0 +1,9 @@
+# src/main/resources/static/robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /contacts
+Disallow: /stats
+
+
+Sitemap: https://gallery.wmmp.xyz/sitemap.xml

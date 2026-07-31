@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ImageData } from "./App";
 import Description from "./Description";
 
-interface SingleProps {
-  host: string;
-}
-export default function Single({ host }: SingleProps) {
-  const location = useLocation();
+export default function Single() {
   const navigate = useNavigate();
-  const imgid: number | undefined = location.state?.id;
+  const { id } = useParams();
   const [image, setImage] = useState<ImageData | null>(null);
   
   useEffect(() => {
     console.log("Retrieve all images for administration");
-    fetch("/images/" + imgid)
+    fetch("/images/" + id)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status ${response.status}`);

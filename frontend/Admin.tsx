@@ -7,22 +7,13 @@ import UpdateImage from "./UpdateImage";
 
 interface AdminProps {
   user: User | null
-  host: string;
 }
 
-export default function Admin({ user, host }: AdminProps) {
+export default function Admin({ user }: AdminProps) {
   const navigate = useNavigate();
   const [page, setPage] = useState<string>("desc");
   const [images, setImages] = useState<Map<number, ImageData>>(new Map());
-  const [img, setImg] = useState<ImageUploadMetadata>({
-      camera: "",
-    aperture: null,
-    shutterSpeed: null,
-    iso: 0,
-    filmStock: null,
-    location: "",
-    description: ""
-  });
+  const [img, setImg] = useState<ImageData | null>(null);
   if (!user || user.perms != 'ADMIN') {
     navigate("/");
   }
@@ -93,8 +84,8 @@ export default function Admin({ user, host }: AdminProps) {
         </a>
       </div>
 
-      {page == "add" && true && <AddImage host={host} />}
-      {page == "up" && true && <UpdateImage image={img} host={host} />}
+      {page == "add" && true && <AddImage />}
+      {page == "up" && true && <UpdateImage image={img} />}
 
       <table className="description-table">
         <thead>

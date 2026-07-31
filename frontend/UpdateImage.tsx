@@ -13,10 +13,9 @@ interface ImageFormData {
 
 interface UpdateImageProps {
   image: ImageData;
-  host: string;
 }
 
-export default function UpdateImage({ image, host }: UpdateImageProps) {
+export default function UpdateImage({ image }: UpdateImageProps) {
   const location = useLocation();
   const navigate = useNavigate();
   // State for form fields

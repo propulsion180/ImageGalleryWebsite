@@ -4,10 +4,9 @@ import { User } from "./App";
 
 interface LoginProps {
   setUser: (value: User | null) => void;
-  host: string;
 }
 
-export default function Login({ setUser, host }: LoginProps) {
+export default function Login({ setUser }: LoginProps) {
   // States to hold form input values
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

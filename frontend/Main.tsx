@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ImageData, User } from "./App";
 
 interface MainProps {
   user: User | null;
-  host: string;
 }
 
 interface ThumbnailDTO {
@@ -20,7 +19,7 @@ interface SliceResponse<T> {
 
 type SortDirection = "asc" | "desc";
 
-async function fetchThumbnails(host: string, page: number, sort: SortDirection): Promise<SliceResponse<ThumbnailDTO>> {
+async function fetchThumbnails(page: number, sort: SortDirection): Promise<SliceResponse<ThumbnailDTO>> {
   const response = await fetch(`/images/thumbnails?page=${page}&size=20&sort=${sort}`, {
     credentials: "include",
   });
@@ -55,7 +54,7 @@ function InfiniteScrollTrigger({ onIntersect }: { onIntersect: () => void}){
 }
 
 
-export default function Main({ user, host }: MainProps) {
+export default function Main({ user }: MainProps) {
   const navigate = useNavigate();
 
   const [thumbnails, setThumbnails] = useState<ThumbnailDTO[]>([]);
@@ -67,7 +66,7 @@ export default function Main({ user, host }: MainProps) {
   async function loadPage(pageToLoad: number, currentSort: SortDirection, isReset: boolean){
     setLoading(true);
     try{
-      const data = await fetchThumbnails(host, pageToLoad, currentSort);
+      const data = await fetchThumbnails(pageToLoad, currentSort);
       setThumbnails(prev => isReset ? data.content: [...prev, ...data.content]);
       setHasMore(!data.last);
       setPage(pageToLoad);
@@ -104,13 +103,9 @@ export default function Main({ user, host }: MainProps) {
         {thumbnails.map(thumbnail =>(
           
           <div className="allimage-item">
-            <a
-              onClick={() => {
-                navigate("/single", { state: { id: thumbnail.id} });
-                }}
-            >
+            <Link to={`/single/${thumbnail.id}`} >
               <img key= {thumbnail.id} src={"/images/files/thumb/" + thumbnail.path} alt={thumbnail.uploadDateTime} />
-            </a>
+            </Link>
           </div>
         ))}
         {hasMore && (<InfiniteScrollTrigger onIntersect={loadMore} />)}

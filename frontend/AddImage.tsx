@@ -4,11 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 // Define the interface for the form data (image details)
 
-interface AdminProps {
-  host: string;
-}
 
-export default function AddImage({ host }: AdminProps) {
+export default function AddImage() {
 
   const navigate = useNavigate();
   // State to handle form data
